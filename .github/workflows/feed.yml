@@ -33,10 +33,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Restore state
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: mbutho001/campusplug-feed-state
           ssh-key: ${{ secrets.STATE_DEPLOY_KEY }}

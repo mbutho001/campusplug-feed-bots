@@ -117,6 +117,9 @@ def main():
     ap.add_argument("--only", nargs="*")
     args = ap.parse_args()
 
+    for base in (TREND, OPP):  # run.sh used to create these; the bots write into them unchecked
+        for sub in ("logs", "state", "out"):
+            (base / sub).mkdir(exist_ok=True)
     state = json.loads(STATE.read_text()) if STATE.exists() else {}
     now = datetime.now(SAST).replace(tzinfo=None)
     if args.only:
