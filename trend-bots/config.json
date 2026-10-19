@@ -1,0 +1,423 @@
+{
+  "timezone": "Africa/Johannesburg",
+  "http_timeout": 20,
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+  "sources": {
+    "news_rss": [
+      {
+        "id": "news24",
+        "name": "News24",
+        "url": "https://feeds.capi24.com/v1/Search/articles/news24/TopStories/rss",
+        "tier": 1
+      },
+      {
+        "id": "sabc",
+        "name": "SABC News",
+        "url": "https://www.sabcnews.com/sabcnews/feed/",
+        "tier": 1
+      },
+      {
+        "id": "enca",
+        "name": "eNCA",
+        "url": "https://www.enca.com/rss.xml",
+        "tier": 1
+      },
+      {
+        "id": "iol",
+        "name": "IOL",
+        "url": "https://iol.co.za/rss/iol/news/",
+        "tier": 1
+      },
+      {
+        "id": "dailymaverick",
+        "name": "Daily Maverick",
+        "url": "https://www.dailymaverick.co.za/dmrss/",
+        "tier": 1
+      },
+      {
+        "id": "groundup",
+        "name": "GroundUp",
+        "url": "https://groundup.org.za/sitenews/rss/",
+        "tier": 1
+      },
+      {
+        "id": "sanews",
+        "name": "SAnews.gov.za",
+        "url": "https://www.sanews.gov.za/rss.xml",
+        "tier": 1,
+        "official": true
+      },
+      {
+        "id": "citizen",
+        "name": "The Citizen",
+        "url": "https://www.citizen.co.za/feed/",
+        "tier": 2
+      },
+      {
+        "id": "thesouthafrican",
+        "name": "The South African",
+        "url": "https://www.thesouthafrican.com/feed/",
+        "tier": 2
+      },
+      {
+        "id": "bbcafrica",
+        "name": "BBC Africa",
+        "url": "https://feeds.bbci.co.uk/news/world/africa/rss.xml",
+        "tier": 1
+      },
+      {
+        "id": "mybroadband",
+        "name": "MyBroadband",
+        "url": "https://mybroadband.co.za/news/feed",
+        "tier": 2
+      },
+      {
+        "id": "kickoff",
+        "name": "KickOff",
+        "url": "https://www.kickoff.com/rss",
+        "tier": 2
+      },
+      {
+        "id": "briefly",
+        "name": "Briefly News",
+        "url": "https://briefly.co.za/rss/all.rss",
+        "tier": 3
+      },
+      {
+        "id": "zalebs",
+        "name": "ZAlebs",
+        "url": "https://www.zalebs.com/feed/",
+        "tier": 3
+      },
+      {
+        "id": "googlenews",
+        "name": "Google News ZA",
+        "url": "https://news.google.com/rss?hl=en-ZA&gl=ZA&ceid=ZA:en",
+        "tier": 2,
+        "aggregator": true
+      }
+    ],
+    "google_trends": {
+      "enabled": true,
+      "url": "https://trends.google.com/trending/rss?geo=ZA"
+    },
+    "x_trends": {
+      "enabled": true,
+      "url": "https://trends24.in/south-africa/",
+      "note": "trends24 scrape: topic names only"
+    },
+    "reddit": {
+      "enabled": true,
+      "subs": [
+        "southafrica",
+        "Johannesburg",
+        "capetown",
+        "durban"
+      ],
+      "pace_seconds": 12
+    },
+    "unavailable": {
+      "TikTok": "Creative Center returns 40101 without a logged-in cookie",
+      "Instagram": "no public trending feed; needs a Meta Graph API token (Business/Creator account)",
+      "Facebook": "no public trending feed; needs a Meta Graph API token",
+      "YouTube": "trending needs a YouTube Data API v3 key (free quota) - not configured",
+      "X posts": "full X API is paid; only trend names via trends24 are used"
+    }
+  },
+  "weights": {
+    "freshness": 0.2,
+    "momentum": 0.2,
+    "student_relevance": 0.2,
+    "sa_relevance": 0.15,
+    "engagement_potential": 0.15,
+    "credibility": 0.1
+  },
+  "category_multipliers": {},
+  "rules": {
+    "max_story_age_hours": 36,
+    "min_independent_outlets": 2,
+    "min_trend_score": 0.45,
+    "min_confidence_auto": 0.75,
+    "dedupe_days": 5,
+    "cluster_similarity": 0.5,
+    "max_posts_per_topic_per_day": 1
+  },
+  "auto_policy": {
+    "min_confidence": 0.75,
+    "min_confidence_medium": 0.85,
+    "min_confidence_single": 0.85,
+    "audit_circuit_breaker": 0.75,
+    "note": "no human review: held posts are auto-cleared by these stricter rules or dropped; all survivors go through the independent auditor"
+  },
+  "bots": {
+    "ayanda.bot@campusplug.com": {
+      "name": "Ayanda Nkosi · Campus Plug News Desk",
+      "categories": [
+        "breaking_news",
+        "politics",
+        "public_safety",
+        "local_news",
+        "cost_of_living",
+        "education",
+        "student_funding",
+        "jobs"
+      ]
+    },
+    "lwazi.bot@campusplug.com": {
+      "name": "Lwazi Mthembu · Campus Plug Sports & Culture",
+      "categories": [
+        "sport_football",
+        "sport_rugby_cricket",
+        "music",
+        "entertainment"
+      ]
+    },
+    "naledi.bot@campusplug.com": {
+      "name": "Naledi Khumalo · Campus Plug Trending",
+      "categories": [
+        "viral",
+        "youth_culture",
+        "technology",
+        "relationships",
+        "student_life",
+        "campus"
+      ]
+    }
+  },
+  "slots": {
+    "morning": {
+      "label": "Morning briefing",
+      "hour": 7,
+      "minute": 0,
+      "publish": 3,
+      "prefer": [
+        "breaking_news",
+        "local_news",
+        "education",
+        "student_funding",
+        "cost_of_living",
+        "public_safety"
+      ]
+    },
+    "midday": {
+      "label": "Midday trending",
+      "hour": 12,
+      "minute": 0,
+      "publish": 3,
+      "prefer": [
+        "viral",
+        "technology",
+        "entertainment",
+        "sport_football",
+        "youth_culture"
+      ]
+    },
+    "afternoon": {
+      "label": "Afternoon student convo",
+      "hour": 15,
+      "minute": 30,
+      "publish": 2,
+      "prefer": [
+        "student_life",
+        "education",
+        "jobs",
+        "cost_of_living",
+        "relationships",
+        "campus"
+      ]
+    },
+    "evening": {
+      "label": "Evening entertainment & debate",
+      "hour": 19,
+      "minute": 0,
+      "publish": 3,
+      "prefer": [
+        "entertainment",
+        "music",
+        "sport_football",
+        "sport_rugby_cricket",
+        "relationships",
+        "viral"
+      ]
+    }
+  },
+  "candidates_per_slot": 6,
+  "space_minutes": 25,
+  "native_polls": false,
+  "llm": {
+    "writer_order": [
+      "groq",
+      "gemini"
+    ],
+    "auditor_order": [
+      "gemini",
+      "groq"
+    ],
+    "models": {
+      "groq": [
+        {
+          "model": "openai/gpt-oss-120b",
+          "search": true,
+          "roles": [
+            "write",
+            "audit"
+          ]
+        },
+        {
+          "model": "openai/gpt-oss-20b",
+          "search": true,
+          "roles": [
+            "write",
+            "audit"
+          ]
+        },
+        {
+          "model": "qwen/qwen3.8-27b",
+          "search": false,
+          "roles": [
+            "write"
+          ]
+        }
+      ],
+      "gemini": [
+        {
+          "model": "gemini-flash-latest",
+          "search": false,
+          "roles": [
+            "write",
+            "audit"
+          ]
+        },
+        {
+          "model": "gemini-3.8-flash",
+          "search": false,
+          "roles": [
+            "write",
+            "audit"
+          ]
+        },
+        {
+          "model": "gemini-3.7-flash",
+          "search": false,
+          "roles": [
+            "write",
+            "audit"
+          ]
+        },
+        {
+          "model": "gemini-3.6-flash",
+          "search": false,
+          "roles": [
+            "write",
+            "audit"
+          ]
+        },
+        {
+          "model": "gemini-3.5-flash",
+          "search": false,
+          "roles": [
+            "write",
+            "audit"
+          ]
+        },
+        {
+          "model": "gemini-flash-lite-latest",
+          "search": false,
+          "roles": [
+            "write"
+          ]
+        },
+        {
+          "model": "gemini-3.5-flash-lite",
+          "search": false,
+          "roles": [
+            "write"
+          ]
+        },
+        {
+          "model": "gemma-4-26b-a4b-it",
+          "search": false,
+          "roles": [
+            "write"
+          ]
+        },
+        {
+          "model": "gemma-4-31b-it",
+          "search": false,
+          "roles": [
+            "write"
+          ]
+        }
+      ]
+    },
+    "pace_seconds": {
+      "groq": 40,
+      "gemini": 8
+    },
+    "timeout_seconds": 180,
+    "note": "Free tiers only (Groq + Gemini), tried in order; a rate-limited model is skipped for cooldown_seconds. Lite/Gemma/Qwen may write but never audit. Gemini search grounding has no free quota -> search false; Google News search results are pasted in instead. Never claude -p or a paid API.",
+    "cooldown_seconds": 900
+  },
+  "report": {
+    "from_name": "Campus Plug Trend Bots",
+    "recipients": []
+  },
+  "hard_to_fetch": [
+    "kickoff.com",
+    "thesouthafrican.com"
+  ],
+  "community": {
+    "note": "Replaces the editorial-bot edge function. Engagement posts only (no time-sensitive facts). Written + independently reviewed by free models.",
+    "windows": {
+      "am": [
+        7,
+        14
+      ],
+      "pm": [
+        14,
+        21.25
+      ]
+    },
+    "posts_per_persona": {
+      "am": 2,
+      "pm": 2
+    },
+    "personas": [
+      {
+        "key": "thandi",
+        "email": "thandi.bot@campusplug.com",
+        "name": "Thandi, the Campus Plug study coach",
+        "tag": "#StudyTok",
+        "brief": "encouraging study and exam coach for matrics and first-years: study techniques, revision challenges, exam stress, quick maths/science/language quiz questions, motivation."
+      },
+      {
+        "key": "sibusiso",
+        "email": "sibusiso.bot@campusplug.com",
+        "name": "Sibusiso, the Campus Plug careers guy",
+        "tag": "#CareerTalk",
+        "brief": "down-to-earth careers and first-job voice: choosing a course, career doubts, CVs and interviews in general, part-time jobs, side hustles, workplace etiquette, 'what do you want to be' debates."
+      },
+      {
+        "key": "lerato",
+        "email": "lerato.bot@campusplug.com",
+        "name": "Lerato, the Campus Plug money-smart friend",
+        "tag": "#MoneyMoves",
+        "brief": "practical student-money friend: budgeting an allowance, cheap meals, saving hacks, splitting costs with roommates, avoiding scams in general terms, 'what do you spend too much on' confessions. Never rand amounts, fees or funding rules."
+      },
+      {
+        "key": "kabelo",
+        "email": "kabelo.bot@campusplug.com",
+        "name": "Kabelo, the Campus Plug future-skills geek",
+        "tag": "#FutureSkills",
+        "brief": "curious tech and future-skills voice: AI tools for studying (ethically), coding, phones and data, productivity apps, learning new skills, 'would you rather' about the future, tech habits."
+      },
+      {
+        "key": "zanele",
+        "email": "zanele.bot@campusplug.com",
+        "name": "Zanele, the Campus Plug culture and vibes editor",
+        "tag": "#CampusLife",
+        "brief": "fun culture and campus-life host: res and digs life, friendships, music and amapiano, fashion on a budget, Mzansi food, weekend plans, relatable confessions, light banter."
+      }
+    ]
+  }
+}
