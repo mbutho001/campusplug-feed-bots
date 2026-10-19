@@ -9,7 +9,7 @@ name: feed
 
 on:
   schedule:
-    - cron: "*/10 4-21 * * *"   # every 10 min, 06:00-23:50 SAST
+    - cron: "*/10 4-21 * * *"   # every 10 min, 06:00-23:50 SAST (times are UTC)
   workflow_dispatch:
     inputs:
       only:
