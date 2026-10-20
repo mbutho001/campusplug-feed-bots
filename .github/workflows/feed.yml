@@ -1,4 +1,4 @@
-# Campus Plug feed bots: trend desk (Ayanda / Lwazi / Naledi + community personas) and the
+# Campus Plug cloud bots: trend desk (Ayanda / Lwazi / Naledi + community personas) and the
 # opportunity bots (Nomvula / Tshepo). Replaces the crontab on the home PC so posting no
 # longer depends on that machine being switched on. tick.py decides what is due.
 #
@@ -9,7 +9,9 @@ name: feed
 
 on:
   schedule:
-    - cron: "*/10 4-21 * * *"   # every 10 min, 06:00-23:50 SAST (times are UTC)
+    # GitHub fires schedules late or not at all under load (2026-10-20: once in 5 hours), so this
+    # is only the restarter. The real 10-minute beat is the "Next tick" step at the end of each run.
+    - cron: "*/10 * * * *"
   workflow_dispatch:
     inputs:
       only:
@@ -54,7 +56,7 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           REPORT_RECIPIENTS: ${{ secrets.REPORT_RECIPIENTS }}
         run: |
-          pip install --quiet requests jsonschema
+          pip install --quiet requests jsonschema Pillow
           rsync -a --exclude .git .state/ ./
           # The bots read their keys from the same files as on the home PC.
           umask 077
@@ -79,6 +81,9 @@ jobs:
       - name: Run due jobs
         env:
           ONLY: ${{ github.event.inputs.only }}
+          # Mail recipients stay out of this public repo.
+          DIGEST_RECIPIENTS: ${{ secrets.DIGEST_RECIPIENTS }}
+          STATS_RECIPIENTS: ${{ secrets.STATS_RECIPIENTS }}
         run: |
           if [ -n "$ONLY" ]; then
             python3 tick.py --only $ONLY
@@ -90,11 +95,14 @@ jobs:
         if: always()
         run: |
           cd .state
-          rm -rf trend-bots opportunities
-          mkdir -p trend-bots opportunities/out opportunities/state
+          rm -rf trend-bots opportunities social-radar user-stats
+          mkdir -p trend-bots opportunities/out opportunities/state social-radar/state user-stats
           cp ../tick-state.json . 2>/dev/null || true
           rsync -a --exclude '*.lock' --exclude 'crontab.backup*' ../trend-bots/state ../trend-bots/logs trend-bots/ 2>/dev/null || true
-          cp ../opportunities/state/seen.sqlite3 opportunities/state/ 2>/dev/null || true
+          cp ../opportunities/state/seen.sqlite3 ../opportunities/state/enrich.json opportunities/state/ 2>/dev/null || true
+          cp ../social-radar/state/seen.sqlite3 social-radar/state/ 2>/dev/null || true
+          rsync -a ../social-radar/logs social-radar/ 2>/dev/null || true
+          rsync -a ../user-stats/logs user-stats/ 2>/dev/null || true
           rsync -a ../opportunities/logs opportunities/ 2>/dev/null || true
           # Only the listing JSON the opportunity bots post from, last 30 days (by the date in the name;
           # file mtimes are reset by every checkout).
@@ -112,6 +120,17 @@ jobs:
           git add -A
           git commit --quiet -m "state $(date '+%F %T')"
           git push --quiet --force origin snapshot:main
+
+      - name: Next tick
+        # Start the following run at the next 10-minute mark. A workflow_dispatch sent with the
+        # GITHUB_TOKEN does start a new run (the documented exception), and the concurrency group
+        # keeps at most one queued, so extra chains from the schedule collapse into one.
+        if: always() && github.event.inputs.only == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sleep $(( 600 - $(date +%s) % 600 ))
+          gh workflow run feed.yml -R "${{ github.repository }}"
 
       - name: Keepalive
         if: always()

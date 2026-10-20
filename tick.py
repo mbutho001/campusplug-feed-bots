@@ -5,7 +5,8 @@ The workflow fires every 10 minutes (GitHub may start it late or skip one), so t
 script works out which jobs are due instead of trusting the cron minute. The times
 are the old crontab on the home PC, in SAST:
 
-  06:15 community am    06:30 opportunities collect + morning slot    11:30 midday slot
+  06:15 community am    06:30 opportunities collect + digest mail + morning slot    07:00 user stats mail
+  12:00 social radar mail    11:30 midday slot
   12:45 community pm    15:00 afternoon slot    18:30 evening slot    21:30 daily report
   Mon 08:00 weekly report
   scout hourly 06-22, opportunity bots (2 listings) hourly 07-21, publish every tick 07-22
@@ -30,6 +31,8 @@ SAST = ZoneInfo("Africa/Johannesburg")
 ROOT = Path(__file__).resolve().parent
 TREND = ROOT / "trend-bots"
 OPP = ROOT / "opportunities"
+RADAR = ROOT / "social-radar"
+STATS = ROOT / "user-stats"
 STATE = ROOT / "tick-state.json"
 
 PY = sys.executable
@@ -39,6 +42,10 @@ TREND_RUN = [PY, "run.py"]
 DAILY = {
     "community-am":   ("06:15", "12:00", None, TREND, [TREND_RUN + ["community", "am"]], 30),
     "opp-collect":    ("06:30", "21:00", None, OPP, [[PY, "scripts/collect.py"], [PY, "scripts/posts.py"]], 25),
+    # Fliers + the daily opportunities mail (was the 06:30 sa-opportunities cron on the home PC).
+    "opp-digest":     ("06:30", "21:00", None, OPP, [[PY, "scripts/fliers.py"], [PY, "scripts/email_digest.py"]], 35),
+    "user-stats":     ("07:00", "12:00", None, STATS, [[PY, "stats_email.py"]], 10),
+    "social-radar":   ("12:00", "18:00", None, RADAR, [[PY, "agent.py"]], 55),
     "slot-morning":   ("06:30", "11:00", None, TREND, [TREND_RUN + ["slot", "morning"]], 40),
     "slot-midday":    ("11:30", "15:00", None, TREND, [TREND_RUN + ["slot", "midday"]], 40),
     "community-pm":   ("12:45", "18:00", None, TREND, [TREND_RUN + ["community", "pm"]], 30),
@@ -56,7 +63,7 @@ REPEAT = {
 }
 
 # Each job logs where its cron line used to (logs/<job>.log), so the logs read the same.
-LOG_NAME = {"opp-collect": "run", "opp-publish": "app_publish", "publish": "publish", "scout": "scout",
+LOG_NAME = {"opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "publish": "publish", "scout": "scout",
             "report-daily": "report", "report-weekly": "report"}
 
 
@@ -117,7 +124,7 @@ def main():
     ap.add_argument("--only", nargs="*")
     args = ap.parse_args()
 
-    for base in (TREND, OPP):  # run.sh used to create these; the bots write into them unchecked
+    for base in (TREND, OPP, RADAR, STATS):  # run.sh used to create these; the bots write into them unchecked
         for sub in ("logs", "state", "out"):
             (base / sub).mkdir(exist_ok=True)
     state = json.loads(STATE.read_text()) if STATE.exists() else {}

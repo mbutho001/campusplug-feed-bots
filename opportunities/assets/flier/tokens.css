@@ -1,0 +1,50 @@
+/* Campus Plug design-system tokens used by the flier, copied from the Claude
+   Design project "Opportunity Flier" (_ds/campus-plug-design-system/tokens/).
+   Vendored so cron renders with no network and no design login. If the design
+   system changes, re-copy colors.css, typography.css and radius.css here. */
+:root {
+  --orange-300: #FF9A5C;
+  --orange-400: #FA8332;
+  --orange-500: #F37023;
+  --orange-600: #D65A12;
+  --orange-700: #9C3F0B;
+  --black:      #0A0A0A;
+
+  --gold-300: #FFBB4D;
+  --gold-500: #E8A020;
+  --gold-600: #C9861A;
+  --gold-bg:  rgba(232,160,32,0.14);
+
+  --warm-950: #150E09;
+  --warm-900: #1C130C;
+  --warm-850: #26180E;
+  --warm-800: #301F12;
+  --warm-700: #3D2817;
+
+  --white:     #FFFFFF;
+  --gray-100:  #E9E6E1;
+  --gray-300:  #B7B2AA;
+  --gray-400:  #9AA0A6;
+  --gray-500:  #6E6A63;
+
+  --green-500: #34C759;
+  --blue-500:  #3B82F6;
+  --red-500:   #F04438;
+
+  --surface-card:  var(--warm-850);
+  --border-subtle: rgba(243,112,35,0.14);
+  --border-default:rgba(243,112,35,0.24);
+  --border-strong: rgba(243,112,35,0.45);
+
+  --text-secondary: var(--gray-300);
+  --text-muted:     var(--gray-400);
+  --accent-2-bg:    var(--gold-bg);
+
+  --gradient-balance: linear-gradient(135deg, #FA8332 0%, #F37023 55%, #D65A12 100%);
+
+  --font-display: 'Fredoka', system-ui, sans-serif;
+  --font-body:    'Quicksand', system-ui, sans-serif;
+
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.45);
+  --shadow-card-inset: inset 0 1px 0 rgba(255,255,255,0.03);
+}

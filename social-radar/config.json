@@ -1,0 +1,221 @@
+{
+  "recipients": [],
+  "from_address": "mbutho@qconnec.co.za",
+  "from_name": "Campus Plug Social Radar",
+  "subject_prefix": "Campus Plug Social Radar",
+  "run": {
+    "feeds_per_run": 7,
+    "max_items_per_email": 14,
+    "max_topics_per_email": 12,
+    "reddit_pace_seconds": 12,
+    "reddit_max_retries": 5,
+    "http_timeout": 25,
+    "user_agent": "campusplug-trends/1.0 (+https://campusplug.co.za)"
+  },
+  "media": {
+    "max_download_bytes": 3500000,
+    "thumb_max_width": 600,
+    "thumb_quality": 72,
+    "max_thumb_bytes": 130000,
+    "max_total_attachment_bytes": 2500000,
+    "allowed_content_types": [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ],
+    "reject_gif_over_bytes": 900000
+  },
+  "video_blocklist": [
+    "v.redd.it",
+    "youtube.com",
+    "youtu.be",
+    "streamable.com",
+    "gfycat.com",
+    "redgifs.com",
+    "twitch.tv",
+    "vimeo.com",
+    "tiktok.com/@",
+    "dailymotion.com",
+    "imgur.com/a/",
+    "reddit.com/gallery"
+  ],
+  "video_extensions": [
+    ".mp4",
+    ".mov",
+    ".webm",
+    ".m4v",
+    ".gifv",
+    ".avi",
+    ".mkv"
+  ],
+  "reddit_feeds": [
+    {
+      "sub": "southafrica",
+      "sort": "hot",
+      "weight": 1.6,
+      "tag": "SA"
+    },
+    {
+      "sub": "memes",
+      "sort": "top?t=day",
+      "weight": 1.2,
+      "tag": "meme"
+    },
+    {
+      "sub": "dankmemes",
+      "sort": "top?t=day",
+      "weight": 1.1,
+      "tag": "meme"
+    },
+    {
+      "sub": "funny",
+      "sort": "top?t=day",
+      "weight": 1.0,
+      "tag": "joke"
+    },
+    {
+      "sub": "meirl",
+      "sort": "top?t=day",
+      "weight": 1.0,
+      "tag": "relatable"
+    },
+    {
+      "sub": "BlackPeopleTwitter",
+      "sort": "top?t=day",
+      "weight": 1.3,
+      "tag": "twitter joke"
+    },
+    {
+      "sub": "wholesomememes",
+      "sort": "top?t=day",
+      "weight": 0.9,
+      "tag": "wholesome"
+    },
+    {
+      "sub": "AdviceAnimals",
+      "sort": "top?t=day",
+      "weight": 0.8,
+      "tag": "meme"
+    },
+    {
+      "sub": "CapeTown",
+      "sort": "hot",
+      "weight": 1.2,
+      "tag": "SA"
+    },
+    {
+      "sub": "Johannesburg",
+      "sort": "hot",
+      "weight": 1.2,
+      "tag": "SA"
+    },
+    {
+      "sub": "mildlyinfuriating",
+      "sort": "top?t=day",
+      "weight": 1.0,
+      "tag": "relatable"
+    },
+    {
+      "sub": "collegememes",
+      "sort": "top?t=day",
+      "weight": 1.5,
+      "tag": "student"
+    },
+    {
+      "sub": "2meirl4meirl",
+      "sort": "top?t=day",
+      "weight": 0.9,
+      "tag": "relatable"
+    }
+  ],
+  "student_keywords": [
+    "nsfas",
+    "student",
+    "campus",
+    "varsity",
+    "university",
+    "res ",
+    "residence",
+    "exam",
+    "test week",
+    "lecture",
+    "tuition",
+    "fees",
+    "graduation",
+    "matric",
+    "wits",
+    "uct",
+    "tuks",
+    "ukzn",
+    "unisa",
+    "cput",
+    "dut",
+    "nwu",
+    "uj",
+    "ufs",
+    "load shedding",
+    "loadshedding",
+    "data bundle",
+    "airtime",
+    "taxi",
+    "wifi",
+    "sassa",
+    "bursary",
+    "textbook",
+    "assignment",
+    "deadline",
+    "hostel",
+    "digs"
+  ],
+  "sa_keywords": [
+    "south africa",
+    "mzansi",
+    "sa ",
+    "joburg",
+    "johannesburg",
+    "cape town",
+    "durban",
+    "pretoria",
+    "soweto",
+    "eskom",
+    "rand",
+    "springboks",
+    "bafana",
+    "kaizer chiefs",
+    "orlando pirates",
+    "sundowns",
+    "amapiano",
+    "braai"
+  ],
+  "banned_words": [
+    "nsfw",
+    "onlyfans",
+    "porn",
+    "nude",
+    "gore",
+    "suicide",
+    "rape"
+  ],
+  "platforms": {
+    "tiktok": {
+      "enabled": true,
+      "region": "ZA",
+      "creative_center_cookie": "",
+      "note": "Public Creative Center blocks anonymous calls. Paste a browser cookie here to enable live TikTok hashtag pulls."
+    },
+    "meta": {
+      "enabled": true,
+      "access_token": "",
+      "ig_business_id": "",
+      "fb_page_id": "",
+      "note": "Instagram + Facebook need a Meta Graph API token (Business/Creator account). Empty token = platform reported as unavailable."
+    }
+  },
+  "meta_hashtags": [
+    "studentlife",
+    "southafrica",
+    "campuslife",
+    "varsitylife",
+    "mzansi"
+  ]
+}

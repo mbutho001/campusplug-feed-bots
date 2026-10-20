@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!-- Campus Plug opportunity flier. Markup and inline styles are the Claude Design
+     file "Opportunity Flier.dc.html" as-is; scripts/fliers.py fills the {{ }} slots
+     (already HTML-escaped) in place of the design runtime. -->
+<html>
+<head>
+<meta charset="utf-8">
+<base href="{{ base }}">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<style>html,body{margin:0;background:#0A0A0A}body{width:{{ w }}px;height:{{ h }}px;overflow:hidden}</style>
+</head>
+<body>
+<div id="flier" style="width: {{ w }}px; height: {{ h }}px; box-sizing: border-box; padding: 56px 60px 52px; background: radial-gradient(120% 60% at 50% -10%, rgba(243,112,35,0.32) 0%, rgba(243,112,35,0) 60%), var(--warm-950); color: var(--white); font-family: var(--font-body); display: flex; flex-direction: column; gap: {{ gap }}px; overflow: hidden; position: relative;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <img src="campusplug-logo.png" alt="CampusPlug" style="width: 64px; height: 64px; object-fit: contain;">
+      <div style="font-family: var(--font-display); font-weight: 700; font-size: 38px; letter-spacing: -0.01em;"><span style="color: var(--white);">Campus</span><span style="color: var(--orange-500);">Plug</span></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 11px 20px; border-radius: 999px; border: 2px solid var(--border-strong); font-family: var(--font-display); font-weight: 600; font-size: 21px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange-300);">
+      <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--orange-500);"></span>Opportunity Alert
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 18px;">
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <span style="padding: 10px 22px; border-radius: 999px; background: {{ accent }}; color: var(--black); font-family: var(--font-display); font-weight: 700; font-size: 26px; letter-spacing: 0.1em; text-transform: uppercase;">{{ type }}</span>
+      <span style="font-family: var(--font-display); font-weight: 500; font-size: 26px; color: var(--text-secondary);">{{ intake }}</span>
+    </div>
+    <!-- Provider leads: its logo (when the listing page has one) and its name. -->
+    <div style="display: flex; align-items: center; gap: 22px;">
+      <!--if:logo-->
+      <div style="flex-shrink: 0; width: 116px; height: 116px; box-sizing: border-box; padding: 10px; background: var(--white); border-radius: 22px; box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: center;">
+        <img src="{{ logoSrc }}" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      </div>
+      <!--endif:logo-->
+      <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-family: var(--font-display); font-weight: 700; font-size: {{ providerSize }}px; line-height: 1.05; letter-spacing: -0.01em; color: var(--orange-300); text-wrap: balance;">{{ provider }}</div>
+        <div style="font-family: var(--font-display); font-weight: 500; font-size: 26px; color: var(--text-secondary);">{{ place }}</div>
+      </div>
+    </div>
+    <div id="title" style="font-family: var(--font-display); font-weight: 700; font-size: {{ titleSize }}px; line-height: 1.02; letter-spacing: -0.015em; text-wrap: balance;">{{ title }}</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+    <div style="background: var(--surface-card); border: 2px solid var(--border-subtle); border-radius: 22px; box-shadow: var(--shadow-md), var(--shadow-card-inset); padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 8px;">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--orange-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><path d="M3 7V6a2 2 0 0 1 2-2h11"></path><circle cx="17" cy="13" r="1.3" fill="currentColor" stroke="none"></circle></svg>
+      <div style="font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);">{{ valueLabel }}</div>
+      <div style="font-family: var(--font-display); font-weight: 700; font-size: 32px; line-height: 1.08;">{{ value }}</div>
+    </div>
+    <div style="background: var(--accent-2-bg); border: 2px solid rgba(232,160,32,0.45); border-radius: 22px; box-shadow: var(--shadow-md), var(--shadow-card-inset); padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 8px;">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold-300)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+      <div style="font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-300);">Closes</div>
+      <div style="font-family: var(--font-display); font-weight: 700; font-size: 32px; line-height: 1.08;">{{ deadline }}</div>
+    </div>
+    <div style="background: var(--surface-card); border: 2px solid var(--border-subtle); border-radius: 22px; box-shadow: var(--shadow-md), var(--shadow-card-inset); padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 8px;">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--orange-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9 12 4 2 9l10 5 10-5z"></path><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"></path></svg>
+      <div style="font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);">Open To</div>
+      <div style="font-family: var(--font-display); font-weight: 700; font-size: 32px; line-height: 1.08;">{{ eligibility }}</div>
+    </div>
+  </div>
+
+  <!--if:requirements-->
+    <div style="background: var(--surface-card); border: 2px solid var(--border-subtle); border-radius: 22px; box-shadow: var(--shadow-md), var(--shadow-card-inset); padding: 24px 28px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange-300);">What You Need</div>
+      <!--for:req-->
+        <div style="display: flex; align-items: center; gap: 14px; font-size: 27px; font-weight: 600; line-height: 1.25; color: var(--gray-100);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z"></path><path d="m9 12 2 2 4-4"></path></svg>{{ r }}
+        </div>
+      <!--endfor:req-->
+      <div style="display: flex; align-items: center; gap: 14px; font-size: 27px; font-weight: 700; line-height: 1.25; color: var(--orange-300); padding-top: 14px; border-top: 2px dashed var(--border-default);">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--orange-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>{{ lockedLine }}
+      </div>
+    </div>
+  <!--endif:requirements-->
+
+  <div style="flex: 1;"></div>
+
+  <div style="background: var(--gradient-balance); border-radius: 28px; padding: 28px 32px; display: flex; align-items: center; gap: 28px; box-shadow: 0 18px 60px rgba(243,112,35,0.35); color: var(--black);">
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+      <div style="font-family: var(--font-display); font-weight: 700; font-size: 42px; line-height: 1.02; letter-spacing: -0.01em; text-wrap: balance;">{{ ctaHeadline }}</div>
+      <div style="font-size: 24px; font-weight: 700; line-height: 1.3;">{{ ctaSub }}</div>
+      <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px; align-self: flex-start; background: var(--black); color: var(--white); border-radius: 999px; padding: 12px 26px 12px 20px;">
+        <!-- Google Play mark, in its own colours rather than the brand orange. -->
+        <svg width="32" height="32" viewBox="0 0 24 24" stroke-linejoin="round" stroke-width="1.2"><path d="M3.6 2.6v18.8L12.9 12Z" fill="#4285F4" stroke="#4285F4"></path><path d="M3.6 2.6 12.9 12l3.5-3.5Z" fill="#EA4335" stroke="#EA4335"></path><path d="M3.6 21.4 12.9 12l3.5 3.5Z" fill="#34A853" stroke="#34A853"></path><path d="M12.9 12l3.5-3.5 4.6 2.6c.8.5.8 1.3 0 1.8l-4.6 2.6Z" fill="#FBBC04" stroke="#FBBC04"></path></svg>
+        <span style="font-family: var(--font-display); font-weight: 600; font-size: 25px;">Get it on Google Play</span>
+      </div>
+      <div style="font-size: 19px; font-weight: 700; line-height: 1.2; margin-top: 2px; overflow-wrap: anywhere;">{{ playUrlText }}</div>
+    </div>
+    <div style="flex-shrink: 0; background: var(--white); border-radius: 20px; padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+      <div role="img" aria-label="Scan to download CampusPlug" style="width: 152px; height: 152px; background-image: url(qr-play.png); background-size: cover; image-rendering: pixelated;"></div>
+      <div style="font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase;">Scan Me</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; font-size: 21px; font-weight: 600; color: var(--text-secondary);">
+    <span>{{ footerLeft }}</span>
+    <span style="font-family: var(--font-display); font-weight: 700; color: var(--orange-300);">{{ handle }}</span>
+  </div>
+</div>
+<script>
+// The design clips anything past the flier's edge, which would cut off the
+// footer. Shrink the title until everything fits rather than lose the CTA.
+(function () {
+  var flier = document.getElementById('flier'), title = document.getElementById('title');
+  var size = parseInt(title.style.fontSize, 10);
+  while (flier.scrollHeight > flier.clientHeight && size > 40) {
+    size -= 4;
+    title.style.fontSize = size + 'px';
+  }
+})();
+</script>
+</body>
+</html>
