@@ -46,12 +46,23 @@ CHROME = "/usr/bin/google-chrome"
 
 PLAY_URL = "https://play.google.com/store/apps/details?id=co.qconnec.campusplug"
 HANDLE = "@campusplugsa"     # planned handle - change here if another is registered
-FOOTER_LEFT = "Verified students only · Your Campus, Plugged In."
+# Student verification is not live in v2 - never print "verified students only".
+FOOTER_LEFT = "Free for SA students · Your Campus, Plugged In."
 CTA_HEADLINE = "Full details & apply link on CampusPlug"
 CTA_SUB = "Free for students. Tap the link in bio or scan to download."
 SEE_APP = "See the app"
 
 LOGO_DIR = ROOT / "state" / "logos"
+
+# Each format's QR carries a Play Install Referrer, so Play Console shows which
+# placement an install came from (assets/flier/qr-play-<format>.png encode these).
+CAMPAIGN = "opp_drop"
+QR_SOURCE = {"portrait": "feed", "square": "x_whatsapp", "story": "stories"}
+
+
+def tracked_play_url(source, medium="flier"):
+    return (f"{PLAY_URL}&referrer=utm_source%3D{source}"
+            f"%26utm_medium%3D{medium}%26utm_campaign%3D{CAMPAIGN}")
 
 # What each format is for - this goes into the file name so the right image
 # is obvious when posting from a phone.
@@ -159,7 +170,7 @@ def caption(item):
     if item.get("closing_date"):
         line += f" Closes {date.fromisoformat(item['closing_date']).strftime('%-d %B %Y')}."
     return "\n".join([
-        PLAY_URL,
+        tracked_play_url("caption", "social"),
         line,
         f'Search "{search_term(item)}" on {APP_NAME} for the requirements and how to apply.',
         " ".join(_tags(item, 5)),
@@ -184,7 +195,7 @@ def fill(template, vals, fmt):
                                      for r in vals["reqs"]), out)
     slots = {k: html.escape(str(v)) for k, v in vals.items() if k != "reqs"}
     slots.setdefault("logoSrc", "")
-    slots.update(w=w, h=h, gap=gap, titleSize=title_size, base=ASSETS.as_uri() + "/",
+    slots.update(qrFile=f"qr-play-{fmt}.png", w=w, h=h, gap=gap, titleSize=title_size, base=ASSETS.as_uri() + "/",
                  providerSize=44 if len(vals["provider"]) > 30 else 54,
                  accent=vals["accent"])
     return re.sub(r"\{\{ (\w+) \}\}", lambda m: str(slots[m.group(1)]), out)

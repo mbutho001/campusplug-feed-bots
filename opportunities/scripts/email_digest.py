@@ -164,6 +164,26 @@ def render_html(feed, pack, when):
     return "\n".join(parts)
 
 
+def render_plan(plan):
+    """Today's posting plan (social_plan.py) - what to post where, with which file."""
+    rows = []
+    for s in plan["slots"]:
+        files = "<br>".join(f"<code style='font-size:11px'>{esc(f)}</code>" for f in s["files"])
+        note = f"<div style='color:#666;font-size:12px;margin:4px 0'>{esc(s['note'])}</div>" if s["note"] else ""
+        rows.append(f"""
+      <div style="border:1px solid #eee;border-radius:8px;padding:10px 12px;margin:8px 0">
+        <strong>{esc(s['time'])} · {esc(', '.join(s['platforms']))}</strong>
+        <div style="margin:4px 0">{files}</div>{note}
+        <pre style="background:#f6f6f6;padding:10px;border-radius:6px;font-size:12px;margin:6px 0 0;
+                    white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace">{esc(s['caption'])}</pre>
+      </div>""")
+    return (f"""
+      <h2 style="font-size:15px;background:#f0f7ff;border-left:3px solid #1e6fd9;padding:8px 10px;margin:18px 0 6px">
+        📲 Today's social plan — {esc(', '.join(plan['search_terms']))}</h2>
+      <p style="font-size:12px;color:#666;margin:0">Times are SAST. The fliers for these slots are the
+        first attachments. Every link is tracked (utm_campaign=opp_drop).</p>""" + "".join(rows))
+
+
 def render_text(feed, when):
     items = feed["opportunities"]
     lines = [f"Campus Plug — opportunities for {when}", f"{len(items)} open opportunities", ""]
@@ -177,7 +197,7 @@ def render_text(feed, when):
     return "\n".join(lines)
 
 
-def flier_batches(when, live_ids, log):
+def flier_batches(when, live_ids, log, first=()):
     """The day's fliers as (captions_text, [[path, ...], ...]) - split to fit a mail.
 
     fliers.py lists them most-urgent first. Listings that closed since the
@@ -189,7 +209,10 @@ def flier_batches(when, live_ids, log):
     except (OSError, ValueError):
         return "", [], ""
     captions, batches, size = [], [[]], 0
-    for entry in manifest.get("fliers", []):
+    # The social plan's listings go first, so they land in the first mail.
+    order = {i: n for n, i in enumerate(first)}
+    entries = sorted(manifest.get("fliers", []), key=lambda e: order.get(e["id"], len(order)))
+    for entry in entries:
         if entry["id"] not in live_ids:
             continue
         paths = [folder / name for name in entry["files"].values() if (folder / name).exists()]
@@ -300,7 +323,14 @@ def main():
     html_body = render_html(feed, pack, when)
     text_body = render_text(feed, when)
 
-    captions, batches, play_url = flier_batches(when, {i["id"] for i in items}, log)
+    plan_path = ROOT / "out" / f"social-plan-{when}.json"
+    plan = json.loads(plan_path.read_text(encoding="utf-8")) if plan_path.exists() else None
+    if plan:
+        html_body = html_body.replace("</p>", "</p>" + render_plan(plan), 1)
+        text_body = (ROOT / "out" / f"social-plan-{when}.md").read_text(encoding="utf-8") + "\n\n" + text_body
+
+    captions, batches, play_url = flier_batches(when, {i["id"] for i in items}, log,
+                                                first=plan["heroes"] if plan else ())
     if batches:
         count = sum(len(b) for b in batches)
         note = (f"{count} ready-to-post fliers are attached"

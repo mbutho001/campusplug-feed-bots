@@ -42,8 +42,8 @@ TREND_RUN = [PY, "run.py"]
 DAILY = {
     "community-am":   ("06:15", "12:00", None, TREND, [TREND_RUN + ["community", "am"]], 30),
     "opp-collect":    ("06:30", "21:00", None, OPP, [[PY, "scripts/collect.py"], [PY, "scripts/posts.py"]], 25),
-    # Fliers + the daily opportunities mail (was the 06:30 sa-opportunities cron on the home PC).
-    "opp-digest":     ("06:30", "21:00", None, OPP, [[PY, "scripts/fliers.py"], [PY, "scripts/email_digest.py"]], 35),
+    # Fliers + today's social posting plan + the daily opportunities mail (was the 06:30 sa-opportunities cron on the home PC).
+    "opp-digest":     ("06:30", "21:00", None, OPP, [[PY, "scripts/fliers.py"], [PY, "scripts/social_plan.py"], [PY, "scripts/email_digest.py"]], 35),
     "user-stats":     ("07:00", "12:00", None, STATS, [[PY, "stats_email.py"]], 10),
     "social-radar":   ("12:00", "18:00", None, RADAR, [[PY, "agent.py"]], 55),
     "slot-morning":   ("06:30", "11:00", None, TREND, [TREND_RUN + ["slot", "morning"]], 40),

@@ -99,7 +99,7 @@ jobs:
           mkdir -p trend-bots opportunities/out opportunities/state social-radar/state user-stats
           cp ../tick-state.json . 2>/dev/null || true
           rsync -a --exclude '*.lock' --exclude 'crontab.backup*' ../trend-bots/state ../trend-bots/logs trend-bots/ 2>/dev/null || true
-          cp ../opportunities/state/seen.sqlite3 ../opportunities/state/enrich.json opportunities/state/ 2>/dev/null || true
+          cp ../opportunities/state/seen.sqlite3 ../opportunities/state/enrich.json ../opportunities/state/social-featured.json opportunities/state/ 2>/dev/null || true
           cp ../social-radar/state/seen.sqlite3 social-radar/state/ 2>/dev/null || true
           rsync -a ../social-radar/logs social-radar/ 2>/dev/null || true
           rsync -a ../user-stats/logs user-stats/ 2>/dev/null || true
@@ -108,7 +108,7 @@ jobs:
           # file mtimes are reset by every checkout).
           cutoff=$(date -d '30 days ago' +%F)
           cp ../opportunities/out/latest.json opportunities/out/ 2>/dev/null || true
-          for f in ../opportunities/out/posts-*.json ../opportunities/out/opportunities-*.json; do
+          for f in ../opportunities/out/posts-*.json ../opportunities/out/opportunities-*.json ../opportunities/out/social-plan-*.json; do
             [ -e "$f" ] || continue
             d=$(basename "$f" .json | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}$') || continue
             [[ "$d" > "$cutoff" ]] && cp "$f" opportunities/out/
