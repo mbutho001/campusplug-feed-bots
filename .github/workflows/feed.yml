@@ -84,6 +84,9 @@ jobs:
           # Mail recipients stay out of this public repo.
           DIGEST_RECIPIENTS: ${{ secrets.DIGEST_RECIPIENTS }}
           STATS_RECIPIENTS: ${{ secrets.STATS_RECIPIENTS }}
+          # Meta Graph API posting (opportunities/scripts/meta_post.py). Unset = Meta posting off.
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+          THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
         run: |
           if [ -n "$ONLY" ]; then
             python3 tick.py --only $ONLY
@@ -99,7 +102,12 @@ jobs:
           mkdir -p trend-bots opportunities/out opportunities/state social-radar/state user-stats
           cp ../tick-state.json . 2>/dev/null || true
           rsync -a --exclude '*.lock' --exclude 'crontab.backup*' ../trend-bots/state ../trend-bots/logs trend-bots/ 2>/dev/null || true
-          cp ../opportunities/state/seen.sqlite3 ../opportunities/state/enrich.json ../opportunities/state/social-featured.json opportunities/state/ 2>/dev/null || true
+          cp ../opportunities/state/seen.sqlite3 ../opportunities/state/enrich.json ../opportunities/state/social-featured.json \
+            ../opportunities/state/meta-posted.json ../opportunities/state/threads-token.json opportunities/state/ 2>/dev/null || true
+          # The fliers today's Meta slots post (staged at 06:30, posted later in the day); today and yesterday only.
+          for d in $(date +%F) $(date -d yesterday +%F); do
+            [ -d "../opportunities/out/social-$d" ] && cp -r "../opportunities/out/social-$d" opportunities/out/
+          done
           cp ../social-radar/state/seen.sqlite3 social-radar/state/ 2>/dev/null || true
           rsync -a ../social-radar/logs social-radar/ 2>/dev/null || true
           rsync -a ../user-stats/logs user-stats/ 2>/dev/null || true
