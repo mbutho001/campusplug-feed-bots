@@ -30,12 +30,14 @@ GRAPH = "https://graph.facebook.com/v23.0"
 PAGE_NAME = "CampusPlug"
 
 
-def get(url, params):
+def get(url, params, fatal=True):
     try:
         with urllib.request.urlopen(f"{url}?{urllib.parse.urlencode(params)}", timeout=30) as r:
             return json.loads(r.read())
     except urllib.error.HTTPError as exc:
         err = json.loads(exc.read() or b"{}").get("error", {})
+        if not fatal:
+            return None
         sys.exit(f"Meta said: {err.get('message', exc)}")
 
 
@@ -65,9 +67,11 @@ def facebook():
 def threads():
     app_id = input("Threads App ID: ").strip()
     secret = getpass.getpass("Threads App secret (hidden): ").strip()
-    short = getpass.getpass("Short-lived Threads token (hidden): ").strip()
-    long = get("https://graph.threads.net/access_token", {
-        "grant_type": "th_exchange_token", "client_secret": secret, "access_token": short})["access_token"]
+    short = getpass.getpass("Threads token - short-lived, or long-lived from the User Token Generator (hidden): ").strip()
+    swapped = get("https://graph.threads.net/access_token", {
+        "grant_type": "th_exchange_token", "client_secret": secret, "access_token": short}, fatal=False)
+    # The dashboard's User Token Generator already hands out a 60-day token; that one can't be exchanged.
+    long = swapped["access_token"] if swapped else short
     me = get("https://graph.threads.net/v1.0/me", {"fields": "username", "access_token": long})
     print(f"Threads: @{me.get('username')} (app {app_id})")
     set_secret("THREADS_TOKEN", long)
