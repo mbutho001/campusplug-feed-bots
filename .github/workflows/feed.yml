@@ -92,6 +92,7 @@ jobs:
           # WhatsApp Channel, TikTok and YouTube posting (opportunities/scripts/channel_post.py). Unset = that platform off.
           WA_AUTH_KEY: ${{ secrets.WA_AUTH_KEY }}
           WA_CHANNEL: ${{ secrets.WA_CHANNEL }}
+          WA_AUTH_SEED: ${{ secrets.WA_AUTH_SEED }}
           TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
           TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
           TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}

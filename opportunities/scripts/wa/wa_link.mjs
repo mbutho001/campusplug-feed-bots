@@ -10,13 +10,15 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import QRCode from "qrcode";
 import { BLOB, channelJid, connect, pack, tempDir } from "./wa_common.mjs";
 
 const args = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
 const phone = (opt("--phone") || "").replace(/\D/g, "");
-if (!/^27\d{9}$/.test(phone)) {
-  console.error("usage: node wa_link.mjs --phone 27XXXXXXXXX [--channel <invite>]");
+const qrPage = opt("--qr");   // write a self-refreshing QR page here instead of a pairing code
+if (!qrPage && !/^27\d{9}$/.test(phone)) {
+  console.error("usage: node wa_link.mjs --phone 27XXXXXXXXX | --qr page.html  [--channel <invite>]");
   process.exit(2);
 }
 
@@ -33,8 +35,16 @@ const dir = tempDir();
 let sock;
 try {
   ({ sock } = await connect(dir, {
-    timeoutMs: 300000,
-    onPairing: async (s) => {
+    timeoutMs: 600000,
+    onQr: qrPage ? async (qr) => {
+      const img = await QRCode.toDataURL(qr, { width: 420, margin: 2 });
+      fs.writeFileSync(qrPage, `<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="3">
+<title>Link Campus Plug bot</title><body style="font-family:sans-serif;text-align:center;padding:30px">
+<h2>WhatsApp &rarr; Settings &rarr; Linked devices &rarr; Link a device &rarr; scan</h2>
+<img src="${img}"><p>This code refreshes by itself.</p></body>`);
+      console.log("QR updated");
+    } : undefined,
+    onPairing: qrPage ? undefined : async (s) => {
       const code = await s.requestPairingCode(phone);
       console.log(`PAIRING CODE: ${code.slice(0, 4)}-${code.slice(4)}`);
       console.log("WhatsApp -> Settings -> Linked devices -> Link a device -> Link with phone number instead");

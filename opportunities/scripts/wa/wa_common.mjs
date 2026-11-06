@@ -10,7 +10,7 @@ import os from "node:os";
 import path from "node:path";
 import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
-import makeWASocket, { DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthState } from "@whiskeysockets/baileys";
+import makeWASocket, { Browsers, DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthState } from "@whiskeysockets/baileys";
 import pino from "pino";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -23,6 +23,12 @@ function key() {
 }
 
 export function unpack(dir) {
+  // First cloud run: the blob isn't in the state repo yet, so it comes from the WA_AUTH_SEED secret
+  // (base64 of the blob wa_link.mjs made). After that the refreshed blob in state/ wins.
+  if (!fs.existsSync(BLOB) && process.env.WA_AUTH_SEED) {
+    fs.mkdirSync(path.dirname(BLOB), { recursive: true });
+    fs.writeFileSync(BLOB, Buffer.from(process.env.WA_AUTH_SEED.trim(), "base64"), { mode: 0o600 });
+  }
   if (!fs.existsSync(BLOB)) return false;
   const raw = fs.readFileSync(BLOB);
   const iv = raw.subarray(0, 12), tag = raw.subarray(12, 28), body = raw.subarray(28);
@@ -49,19 +55,20 @@ export function tempDir() {
 
 // Connect and resolve once the socket is open. onPairing(sock) runs on a fresh, unregistered
 // session (linking); restarts WhatsApp asks for (after pairing) are followed automatically.
-export async function connect(dir, { onPairing, timeoutMs = 120000 } = {}) {
+export async function connect(dir, { onPairing, onQr, timeoutMs = 120000 } = {}) {
   const { state, saveCreds } = await useMultiFileAuthState(dir);
   const { version } = await fetchLatestBaileysVersion().catch(() => ({ version: undefined }));
   const deadline = Date.now() + timeoutMs;
   for (;;) {
     const sock = makeWASocket({
-      auth: state, version, logger: pino({ level: "silent" }), printQRInTerminal: false,
-      browser: ["Campus Plug Bot", "Chrome", "1.0"], markOnlineOnConnect: false, syncFullHistory: false,
+      auth: state, version, logger: pino({ level: process.env.WA_LOG || "silent" }), printQRInTerminal: false,
+      browser: Browsers.ubuntu("Chrome"), markOnlineOnConnect: false, syncFullHistory: false,
     });
     sock.ev.on("creds.update", saveCreds);
     let asked = false;
     const result = await new Promise((resolve) => {
       sock.ev.on("connection.update", async (u) => {
+        if (u.qr && onQr) await onQr(u.qr);
         if (u.qr && !state.creds.registered && onPairing && !asked) {
           asked = true;
           await onPairing(sock);
