@@ -78,10 +78,12 @@ def threads():
 
 
 if __name__ == "__main__":
-    which = sys.argv[1] if len(sys.argv) > 1 else ""
-    if which == "facebook":
+    which = " ".join(sys.argv[1:]).strip().lower()
+    if not which:
+        which = input("Which token? Type facebook or threads: ").strip().lower()
+    if which.startswith(("f", "page", "insta", "ig")):
         facebook()
-    elif which == "threads":
+    elif which.startswith(("t", "th")):
         threads()
     else:
-        sys.exit(__doc__)
+        sys.exit(f"Didn't understand {which!r} - run it again and type facebook or threads.")
