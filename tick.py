@@ -66,6 +66,12 @@ REPEAT = {
     "channel-post": (7, 23, 0, OPP, [PY, "scripts/channel_post.py"], 20),
 }
 
+# Manual-only jobs (run with --only): token checks that post nothing.
+MANUAL = {
+    "channel-check": (OPP, [PY, "scripts/channel_post.py", "--check"], 5),
+    "meta-check": (OPP, [PY, "scripts/meta_post.py", "--check"], 5),
+}
+
 # Each job logs where its cron line used to (logs/<job>.log), so the logs read the same.
 LOG_NAME = {"opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "meta-post": "meta_post", "channel-post": "channel_post", "publish": "publish", "scout": "scout",
             "report-daily": "report", "report-weekly": "report"}
@@ -136,6 +142,7 @@ def main():
     if args.only:
         table = {n: (v[3], v[4], v[5]) for n, v in DAILY.items()}
         table.update({n: (v[3], [v[4]], v[5]) for n, v in REPEAT.items()})
+        table.update({n: (v[0], [v[1]], v[2]) for n, v in MANUAL.items()})
         unknown = set(args.only) - set(table)
         if unknown:
             sys.exit(f"unknown job(s): {', '.join(sorted(unknown))}; known: {', '.join(table)}")
