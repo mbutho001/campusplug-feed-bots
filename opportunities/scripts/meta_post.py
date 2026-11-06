@@ -236,7 +236,8 @@ def stage(day):
     folder = OUT / f"social-{day}"
     folder.mkdir(parents=True, exist_ok=True)
     n = 0
-    for _, s in meta_slots(plan):
+    # Every slot, not just the Meta ones: channel_post.py (WhatsApp, TikTok, YouTube) posts from here too.
+    for s in plan["slots"]:
         for f in s["files"]:
             src = Path(f) if Path(f).is_absolute() else ROOT / f
             if not src.exists():
@@ -246,7 +247,7 @@ def stage(day):
                 n += 1
             else:
                 print(f"stage: missing flier {f}")
-    print(f"staged {n} fliers for the Meta slots of {day}")
+    print(f"staged {n} fliers for the social slots of {day}")
     return 0
 
 

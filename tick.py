@@ -43,7 +43,7 @@ DAILY = {
     "community-am":   ("06:15", "12:00", None, TREND, [TREND_RUN + ["community", "am"]], 30),
     "opp-collect":    ("06:30", "21:00", None, OPP, [[PY, "scripts/collect.py"], [PY, "scripts/posts.py"]], 25),
     # Fliers + today's social posting plan + the daily opportunities mail (was the 06:30 sa-opportunities cron on the home PC).
-    "opp-digest":     ("06:30", "21:00", None, OPP, [[PY, "scripts/fliers.py"], [PY, "scripts/social_plan.py"], [PY, "scripts/meta_post.py", "--stage"], [PY, "scripts/email_digest.py"]], 35),
+    "opp-digest":     ("06:30", "21:00", None, OPP, [[PY, "scripts/fliers.py"], [PY, "scripts/social_plan.py"], [PY, "scripts/meta_post.py", "--stage"], [PY, "scripts/shorts.py"], [PY, "scripts/email_digest.py"]], 45),
     "user-stats":     ("07:00", "12:00", None, STATS, [[PY, "stats_email.py"]], 10),
     "social-radar":   ("12:00", "18:00", None, RADAR, [[PY, "agent.py"]], 55),
     "slot-morning":   ("06:30", "11:00", None, TREND, [TREND_RUN + ["slot", "morning"]], 40),
@@ -62,10 +62,12 @@ REPEAT = {
     "publish":     (7, 22, 0, TREND, TREND_RUN + ["publish"], 10),
     # Posts the Meta slots of today's social plan (FB Page, Instagram, Threads) once each.
     "meta-post":   (7, 23, 0, OPP, [PY, "scripts/meta_post.py"], 15),
+    # Posts the WhatsApp Channel, TikTok and YouTube Shorts slots once each.
+    "channel-post": (7, 23, 0, OPP, [PY, "scripts/channel_post.py"], 20),
 }
 
 # Each job logs where its cron line used to (logs/<job>.log), so the logs read the same.
-LOG_NAME = {"opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "meta-post": "meta_post", "publish": "publish", "scout": "scout",
+LOG_NAME = {"opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "meta-post": "meta_post", "channel-post": "channel_post", "publish": "publish", "scout": "scout",
             "report-daily": "report", "report-weekly": "report"}
 
 

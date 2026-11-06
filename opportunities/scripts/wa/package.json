@@ -1,0 +1,11 @@
+{
+  "name": "campusplug-wa-channel",
+  "private": true,
+  "type": "module",
+  "description": "Posts the daily opportunity roundup to the Campus Plug SA WhatsApp Channel (linked device).",
+  "dependencies": {
+    "@whiskeysockets/baileys": "6.7.24",
+    "pino": "9.7.0",
+    "qrcode-terminal": "0.12.0"
+  }
+}

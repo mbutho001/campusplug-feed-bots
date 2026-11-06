@@ -56,7 +56,9 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           REPORT_RECIPIENTS: ${{ secrets.REPORT_RECIPIENTS }}
         run: |
-          pip install --quiet requests jsonschema Pillow
+          pip install --quiet requests jsonschema Pillow edge-tts==7.3.1
+          # WhatsApp Channel poster (opportunities/scripts/wa): Baileys linked device.
+          (cd opportunities/scripts/wa && npm ci --no-audit --no-fund --silent)
           rsync -a --exclude .git .state/ ./
           # The bots read their keys from the same files as on the home PC.
           umask 077
@@ -87,6 +89,15 @@ jobs:
           # Meta Graph API posting (opportunities/scripts/meta_post.py). Unset = Meta posting off.
           META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
           THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+          # WhatsApp Channel, TikTok and YouTube posting (opportunities/scripts/channel_post.py). Unset = that platform off.
+          WA_AUTH_KEY: ${{ secrets.WA_AUTH_KEY }}
+          WA_CHANNEL: ${{ secrets.WA_CHANNEL }}
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: |
           if [ -n "$ONLY" ]; then
             python3 tick.py --only $ONLY
@@ -103,7 +114,9 @@ jobs:
           cp ../tick-state.json . 2>/dev/null || true
           rsync -a --exclude '*.lock' --exclude 'crontab.backup*' ../trend-bots/state ../trend-bots/logs trend-bots/ 2>/dev/null || true
           cp ../opportunities/state/seen.sqlite3 ../opportunities/state/enrich.json ../opportunities/state/social-featured.json \
-            ../opportunities/state/meta-posted.json ../opportunities/state/threads-token.json opportunities/state/ 2>/dev/null || true
+            ../opportunities/state/meta-posted.json ../opportunities/state/threads-token.json \
+            ../opportunities/state/channel-posted.json ../opportunities/state/tiktok-token.json \
+            ../opportunities/state/wa-auth.enc opportunities/state/ 2>/dev/null || true
           # The fliers today's Meta slots post (staged at 06:30, posted later in the day); today and yesterday only.
           for d in $(date +%F) $(date -d yesterday +%F); do
             [ -d "../opportunities/out/social-$d" ] && cp -r "../opportunities/out/social-$d" opportunities/out/

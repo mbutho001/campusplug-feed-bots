@@ -5,10 +5,11 @@ fliers.py renders a flier for every open listing; nobody can post 50 a day.
 This picks the day's three "hero" listings and maps them onto platform slots
 (SAST), each with the flier file to use, a teaser caption and a tracked link:
 
-    07:30  WhatsApp Channel      roundup text + hero 1 (square)
-    12:30  TikTok photo / Stories / Snapchat   hero 1 (story)
+    07:30  WhatsApp Channel      roundup text + the heroes (square)       auto: channel_post.py
+    12:30  TikTok + Stories      the Short of the heroes (story fliers)  auto (TikTok): channel_post.py
     13:00  X                     hero 2 (square)
-    19:00  Instagram + Facebook  carousel of the heroes (portrait)
+    17:00  YouTube Shorts        the Short of the heroes                 auto: channel_post.py
+    19:00  Instagram + Facebook  carousel of the heroes (portrait)       auto: meta_post.py
     20:30  X                     hero 3 (square)
     Mon    LinkedIn + IG/FB      "closing this week" carousel (portrait, up to 9)
 
@@ -29,9 +30,10 @@ import sys
 from datetime import date
 from pathlib import Path
 
+import channel_content
 from email_digest import refresh_deadlines
 from fliers import tracked_play_url
-from posts import APP_NAME, BASE_TAGS, LIMITS, pretty_date, roundup, search_term, teaser
+from posts import APP_NAME, BASE_TAGS, LIMITS, pretty_date, search_term, teaser
 
 ROOT = Path(__file__).resolve().parent.parent
 STATE = ROOT / "state" / "social-featured.json"
@@ -111,13 +113,18 @@ def build_plan(items, entries, featured, today, when):
     if not heroes:
         return None, []
     h = heroes
+    yt_title, yt_desc, yt_tags = channel_content.youtube(heroes)
     slots = [
-        slot("07:30", ["WhatsApp Channel"], h[:1], "square", "whatsapp", entries,
-             caption=with_link(roundup(items, "whatsapp", when)["text"], "whatsapp"),
-             note="Post the roundup text, then the flier as a second message."),
-        slot("12:30", ["TikTok (photo mode)", "Instagram Story", "Facebook Story", "Snapchat"],
-             h[:1], "story", "tiktok", entries,
-             note="TikTok: add a trending sound. Stories: add a link sticker to the Play link."),
+        slot("07:30", ["WhatsApp Channel"], heroes, "square", "whatsapp", entries,
+             caption=channel_content.whatsapp(heroes, items, when),
+             note="Posted by channel_post.py: the fliers, the roundup as the first one's caption."),
+        slot("12:30", ["TikTok", "Instagram Story", "Facebook Story"],
+             heroes, "story", "tiktok", entries, caption=channel_content.tiktok(heroes),
+             note="TikTok gets the Short (shorts.py) via channel_post.py. "
+                  "Stories are manual: add a link sticker to the Play link."),
+        dict(slot("17:00", ["YouTube Shorts"], heroes, "story", "youtube", entries, caption=yt_desc,
+                  note="Posted by channel_post.py: the Short shorts.py made from these fliers."),
+             title=yt_title, tags=yt_tags),
         slot("19:00", ["Instagram feed", "Facebook Page"], heroes, "portrait", "instagram", entries,
              caption=with_link(carousel_caption(heroes), "instagram"),
              note="Carousel, one flier per slide. On Facebook the caption link is clickable — "
