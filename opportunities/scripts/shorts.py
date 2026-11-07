@@ -17,6 +17,7 @@ import argparse
 import html
 import json
 import shutil
+import os
 import subprocess
 import sys
 import tempfile
@@ -69,6 +70,19 @@ def card(kind, items, dest, workdir):
     screenshot(CARD.format(assets=ASSETS.as_uri(), body=body), "story", dest, workdir)
 
 
+def ensure_ffmpeg():
+    """GitHub's ubuntu runner has no ffmpeg; install it on demand (passwordless sudo there)."""
+    if shutil.which("ffmpeg") and shutil.which("ffprobe"):
+        return
+    if not (os.environ.get("CI") and shutil.which("apt-get")):
+        raise RuntimeError("ffmpeg/ffprobe not installed")
+    print("shorts: installing ffmpeg")
+    env = {**os.environ, "DEBIAN_FRONTEND": "noninteractive"}
+    subprocess.run(["sudo", "apt-get", "update", "-qq"], check=True, timeout=300, env=env, capture_output=True)
+    subprocess.run(["sudo", "apt-get", "install", "-y", "-qq", "--no-install-recommends", "ffmpeg"],
+                   check=True, timeout=600, env=env, capture_output=True)
+
+
 def make_voice(text, dest):
     """MP3 of the voiceover, or None. Duration in seconds alongside."""
     exe = shutil.which("edge-tts")
@@ -118,6 +132,7 @@ def render(images, durations, voice, dest):
 
 
 def build(day, voice=True):
+    ensure_ffmpeg()
     plan_path = OUT / f"social-plan-{day}.json"
     if not plan_path.exists():
         print(f"shorts: no social plan for {day}")

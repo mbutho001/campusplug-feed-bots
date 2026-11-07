@@ -70,6 +70,7 @@ REPEAT = {
 MANUAL = {
     "channel-check": (OPP, [PY, "scripts/channel_post.py", "--check"], 5),
     "meta-check": (OPP, [PY, "scripts/meta_post.py", "--check"], 5),
+    "shorts": (OPP, [PY, "scripts/shorts.py"], 20),  # re-render today's Short after a failure
 }
 
 # Each job logs where its cron line used to (logs/<job>.log), so the logs read the same.
