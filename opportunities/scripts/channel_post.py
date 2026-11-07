@@ -225,6 +225,7 @@ def run(dry, only=None, force=False):
     plan = json.loads(path.read_text(encoding="utf-8"))
     posted = json.loads(STATE.read_text()) if STATE.exists() else {}
     failures = 0
+    rebuilt = set()
     for platform, s in channel_slots(plan):
         if only and platform not in only:
             continue
@@ -237,6 +238,14 @@ def run(dry, only=None, force=False):
             continue
         video = OUT / f"social-{day}" / f"short-{day}.mp4"
         files = slot_files(day, s)
+        if platform in ("tiktok", "youtube") and not video.exists() and not dry and day not in rebuilt:
+            # The 06:30 render failed (or was skipped); try once more now that a video slot is due.
+            rebuilt.add(day)
+            try:
+                import shorts
+                shorts.build(day)
+            except Exception as exc:  # noqa: BLE001
+                print(f"{key}: Short re-render failed: {exc!r}")
         if platform in ("tiktok", "youtube") and not video.exists():
             print(f"{key}: no Short for today - skipped")
             continue
