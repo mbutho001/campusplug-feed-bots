@@ -79,7 +79,7 @@ def feed_text(post):
     t = re.sub(r"Apply / full details: (https?://\S+)", "\U0001F517 Apply / full details:\n\\1", t)
     t = re.sub(r"\s*\((?:closes )?today\)", " (closes today)", t, flags=re.I)
     emoji = {"bursary": "💰", "internship": "💼", "learnership": "🎓",
-             "apprenticeship": "🔧", "graduate": "🎓", "in-service": "🛠️"}
+             "apprenticeship": "🔧", "graduate": "🎓", "in-service": "🛠️", "job": "👔"}
     title = re.sub(r"\s+New$", "", post["title"])
     head = f"{emoji.get(post.get('category'), '📢')} {title}"
     return f"{head}\n\n{t.strip()}\n\n#CampusPlugOpportunities"

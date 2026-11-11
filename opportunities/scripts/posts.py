@@ -34,7 +34,7 @@ LIMITS = {"x": 280, "instagram": 2200, "facebook": 2000,
 CATEGORY_EMOJI = {
     "bursary": "🎓", "internship": "💼", "learnership": "🛠️",
     "apprenticeship": "🔧", "in-service training": "📋",
-    "graduate programme": "🚀",
+    "graduate programme": "🚀", "job": "👔",
 }
 
 BASE_TAGS = ["#CampusPlug", "#SAJobs", "#Mzansi"]
@@ -45,6 +45,7 @@ CATEGORY_TAGS = {
     "apprenticeship": ["#Apprenticeships", "#Artisan", "#SkillsSA"],
     "in-service training": ["#InServiceTraining", "#WIL", "#P1P2"],
     "graduate programme": ["#GraduateProgramme", "#GradJobs", "#Careers"],
+    "job": ["#Vacancies", "#GovernmentJobs", "#JobsSA"],
 }
 
 
@@ -218,7 +219,7 @@ def teaser(item, platform):
 _PLURALS = {"bursary": "bursaries", "internship": "internships",
             "learnership": "learnerships", "apprenticeship": "apprenticeships",
             "in-service training": "in-service training placements",
-            "graduate programme": "graduate programmes"}
+            "graduate programme": "graduate programmes", "job": "jobs"}
 
 
 def plural(category, n):

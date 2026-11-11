@@ -9,7 +9,13 @@ import re
 from datetime import date, datetime
 
 CATEGORIES = ["bursary", "internship", "learnership", "apprenticeship",
-              "in-service training", "graduate programme"]
+              "in-service training", "graduate programme", "job"]
+
+# "job" is a fallback, and only for sources that opt in (allow_jobs): the
+# government-vacancy sources. Other feeds carry general jobs that Campus Plug
+# deliberately leaves out.
+_JOB_RULE = (r"vacanc|\bposts?\s+available|\bjobs?\b|recruit|hiring|"
+             r"\bposition|appointment|employment\s+opportunit|career\s+opportunit")
 
 # Ordered: the first pattern that hits wins, so the more specific terms lead.
 _CATEGORY_RULES = [
@@ -114,6 +120,14 @@ def categorise(title, body, categories):
     return _match_categories(" ".join([" ".join(categories or []), (body or "")[:1500]]))
 
 
+def job_category(title, body, categories):
+    """["job"] when a listing is a plain vacancy, else []. Callers gate on allow_jobs."""
+    if re.search(_JOB_RULE, title or "", re.I):
+        return ["job"]
+    blob = " ".join([" ".join(categories or []), (body or "")[:600]])
+    return ["job"] if re.search(_JOB_RULE, blob, re.I) else []
+
+
 def province(*texts):
     blob = " ".join(t for t in texts if t).lower()
     found = [name for name, pat in PROVINCES.items() if re.search(pat, blob, re.I)]
@@ -158,6 +172,26 @@ def employer(title):
     if not (2 <= len(candidate) <= 45) or len(candidate.split()) > 6:
         return None
     return candidate or None
+
+
+_LEAD_EMPLOYER = re.compile(
+    r"\bThe\s+((?:[A-Z][\w&'.\-]*|of|and|for|the|in)(?:[ ,]+(?:[A-Z][\w&'.\-]*|of|and|for|the|in)){0,9})"
+    r"(?:\s+\([A-Z][A-Za-z]{1,9}\))?\s+(?:is\s+inviting|has\s+announced|invites|is\s+looking|"
+    r"is\s+recruiting|is\s+hiring|has\s+opened|has\s+released|is\s+calling)")
+
+
+def employer_from_lead(body):
+    """Vacancy posts open with "The <Employer> (ABBR) is inviting ...". Job titles
+    run employer and role together ("Department of Health Data Capturer"), so
+    for jobs this lead sentence is the reliable witness."""
+    m = _LEAD_EMPLOYER.search((body or "")[:900])
+    if not m:
+        m = re.search(r"\b([A-Z][A-Za-z&.\-]{1,30}(?: [A-Z][A-Za-z&.\-]{1,30}){0,3}) is inviting",
+                      (body or "")[:900])
+    if not m:
+        return None
+    name = m.group(1).strip(" ,")
+    return name if 2 <= len(name) <= 70 and len(name.split()) <= 10 else None
 
 
 def matric_only(title, body):

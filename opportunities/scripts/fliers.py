@@ -74,9 +74,10 @@ ACCENTS = {
     "internship": "var(--orange-500)", "bursary": "var(--gold-500)",
     "learnership": "var(--orange-300)", "apprenticeship": "var(--green-500)",
     "in-service training": "var(--gold-300)", "graduate programme": "var(--orange-400)",
+    "job": "var(--orange-600)",
 }
 # The pill is one line, so the two long category names get a short form.
-TYPE_LABEL = {"in-service training": "In-Service", "graduate programme": "Grad Programme"}
+TYPE_LABEL = {"in-service training": "In-Service", "graduate programme": "Grad Programme", "job": "Vacancy"}
 
 _PROGRAMME = re.compile(r"intern|learner|bursar|apprentice|graduate|programme|trainee|training|scholar", re.I)
 _DANGLING = re.compile(r"\b(in|of|or|and|the|a|an|to|for|with|as|at)\W*$", re.I)
@@ -100,6 +101,15 @@ def clean_title(item):
     # The employer has its own line. "Employer: Programme" keeps the programme;
     # "Programme: 80 posts, 12 months" keeps the programme and drops the detail.
     employer = (item.get("employer") or "").lower()
+    if item.get("primary_category") == "job" and item.get("source_key") != "dpsa":
+        # "SAPS Admin Clerk Vacancy: Grade 12 ... - Salary R..." - the role is the
+        # headline; the colon/dash tail is selling copy. The provider line already
+        # names the employer, so a leading employer name or abbreviation goes.
+        role = re.split(r"\s+Vacanc\w*\b|:\s|\s[–—-]\s", title, maxsplit=1)[0].strip()
+        stripped = role[len(employer):].strip() if employer and role.lower().startswith(employer) else ""
+        role = stripped if len(stripped) >= 3 else re.sub(r"^[A-Z]{2,8}\s+", "", role)
+        if 3 <= len(role) < len(title):
+            title = role
     head, sep, tail = title.partition(": ")
     if sep and _PROGRAMME.search(head):
         title = head

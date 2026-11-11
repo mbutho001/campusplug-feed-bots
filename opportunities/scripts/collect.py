@@ -37,7 +37,7 @@ DB_PATH = ROOT / "state" / "seen.sqlite3"
 OUT_DIR = ROOT / "out"
 KEEP_DAYS = 120
 DEFAULT_MAX_AGE_DAYS = 45      # how far back a listing may have been published
-DEFAULT_LIMIT = 60
+DEFAULT_LIMIT = 80   # raised from 60 when the two job sources were added
 
 
 def log(msg):
@@ -74,6 +74,8 @@ def normalise(raw, today):
     title = re.sub(r"\s+", " ", raw["title"]).strip()
     body = raw.get("body") or ""
     cats = classify.categorise(title, body, raw.get("source_categories"))
+    if not cats and raw.get("allow_jobs"):
+        cats = classify.job_category(title, body, raw.get("source_categories"))
 
     close, snippet = (None, None)
     if raw.get("closing_raw"):
@@ -93,7 +95,9 @@ def normalise(raw, today):
         "source_key": raw["source_key"],
         "categories": cats,
         "primary_category": cats[0] if cats else None,
-        "employer": classify.employer(title),
+        "employer": (raw.get("employer")
+                     or (classify.employer_from_lead(body) if cats == ["job"] else None)
+                     or classify.employer(title)),
         "province": prov,
         "location": raw.get("location_raw"),
         "fields": classify.fields(title, body),
@@ -149,6 +153,11 @@ def same_opportunity(a, b):
     ea = (a.get("employer") or "").lower().strip()
     eb = (b.get("employer") or "").lower().strip()
     employer_match = bool(ea and eb) and (ea in eb or eb in ea)
+    if "job" in (a.get("primary_category"), b.get("primary_category")):
+        # Vacancy headlines are formulaic ("X Clerk Vacancy: Grade 12 ...") and
+        # two departments' clerk posts are different jobs - merge only when the
+        # employer agrees and the titles are near-identical.
+        return employer_match and overlap >= 0.8
     if employer_match and a.get("primary_category") == b.get("primary_category"):
         return overlap >= 0.4
     return overlap >= 0.8
@@ -290,7 +299,7 @@ def main():
 
     log(f"Campus Plug opportunity collector — {today.isoformat()}")
     raw_items, failures = sources.collect_all(log)
-    log(f"\n{len(raw_items)} raw listings from {len(sources.FEED_SOURCES) + 1} sources")
+    log(f"\n{len(raw_items)} raw listings from {len(sources.FEED_SOURCES) + 2} sources")
 
     con = connect()
     seen_ids = {r[0] for r in con.execute("SELECT id FROM seen")}
