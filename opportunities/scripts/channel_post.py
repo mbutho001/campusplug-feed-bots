@@ -161,25 +161,32 @@ def tiktok_post(slot, video):
                           "video_cover_timestamp_ms": 1200, "brand_organic_toggle": True},
             "source_info": {"source": "FILE_UPLOAD", "video_size": size, "chunk_size": size,
                             "total_chunk_count": 1}})
+    inbox = False
     try:
         init = init_post(privacy)
     except PostError as exc:
-        # An unaudited app may only post SELF_ONLY, even when the account offers public.
-        if "unaudited_client" not in str(exc) or privacy == "SELF_ONLY":
+        # An unaudited app can direct-post only to a PRIVATE account. Until the Direct Post audit
+        # passes, upload to the creator's TikTok inbox instead: a draft they publish with one tap.
+        if "unaudited_client" not in str(exc):
             raise
-        privacy = "SELF_ONLY"
-        init = init_post(privacy)
+        inbox = True
+        init = tt_call("/post/publish/inbox/video/init/", tok, {
+            "source_info": {"source": "FILE_UPLOAD", "video_size": size, "chunk_size": size,
+                            "total_chunk_count": 1}})
     http("PUT", init["upload_url"], body=video.read_bytes(), timeout=600,
          headers={"Content-Type": "video/mp4", "Content-Range": f"bytes 0-{size - 1}/{size}"})
     pid = init["publish_id"]
     for _ in range(40):
         st = tt_call("/post/publish/status/fetch/", tok, {"publish_id": pid})
         status = st.get("status")
-        if status == "PUBLISH_COMPLETE":
+        if status == "PUBLISH_COMPLETE" or (inbox and status == "SEND_TO_USER_INBOX"):
             break
         if status == "FAILED":
             raise PostError(f"tiktok publish failed: {st.get('fail_reason')}")
         time.sleep(6)
+    if inbox:
+        return pid, (f"@{info.get('creator_username', '?')} as an INBOX DRAFT (app not audited): "
+                     "open TikTok, tap the notification, paste the caption from the digest mail, Post")
     note = "" if privacy == "PUBLIC_TO_EVERYONE" else \
         f" (posted as {privacy}: TikTok allows only private posts until the app passes its audit)"
     return pid, f"@{info.get('creator_username', '?')}{note}"
