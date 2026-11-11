@@ -52,7 +52,8 @@ STATE = ROOT / "state" / "meta-posted.json"
 THREADS_STATE = ROOT / "state" / "threads-token.json"
 GRAPH = "https://graph.facebook.com/v23.0"
 THREADS = "https://graph.threads.net/v1.0"
-META_PLATFORMS = ("Instagram feed", "Facebook Page")
+META_PLATFORMS = ("Instagram feed", "Facebook Page", "Instagram Story", "Facebook Story")
+STORY_PLATFORMS = ("Instagram Story", "Facebook Story")
 SLOT_GRACE_HOURS = 3
 THREADS_LIMIT = 500
 IG_CAROUSEL_MAX = 10
@@ -184,6 +185,49 @@ def ig_post(ig_id, token, urls, caption):
     return call("POST", f"{GRAPH}/{ig_id}/media_publish", {"creation_id": c, "access_token": token}).get("id")
 
 
+def fb_upload(page_id, token, f):
+    """Upload one image unpublished; returns (photo id, largest CDN url)."""
+    r = call("POST", f"{GRAPH}/{page_id}/photos",
+             {"published": "false", "access_token": token}, files={"source": f}, timeout=120)
+    img = call("GET", f"{GRAPH}/{r['id']}", {"fields": "images", "access_token": token})
+    best = max(img.get("images", []), key=lambda i: i.get("width", 0), default={})
+    return r["id"], best.get("source")
+
+
+def fb_story(page_id, token, photo_id):
+    r = call("POST", f"{GRAPH}/{page_id}/photo_stories", {"photo_id": photo_id, "access_token": token})
+    return r.get("post_id") or r.get("id") or "ok"
+
+
+def ig_story(ig_id, token, url):
+    c = call("POST", f"{GRAPH}/{ig_id}/media", {"image_url": url, "media_type": "STORIES",
+                                                "access_token": token})["id"]
+    wait_ready(GRAPH, c, token)
+    return call("POST", f"{GRAPH}/{ig_id}/media_publish", {"creation_id": c, "access_token": token}).get("id")
+
+
+def post_stories(key, done, page_id, ig_id, token, files, platforms):
+    """One story frame per story flier, on the FB Page and IG. Returns the number of failures."""
+    failures = 0
+    uploads = done.setdefault("uploads", [])
+    for i, f in enumerate(files):
+        try:
+            if i >= len(uploads):
+                uploads.append(list(fb_upload(page_id, token, f)))
+            pid, url = uploads[i]
+            if "Facebook Story" in platforms and f"fb_story_{i}" not in done:
+                done[f"fb_story_{i}"] = fb_story(page_id, token, pid)
+                print(f"{key}: facebook story {i + 1}/{len(files)} {done[f'fb_story_{i}']}")
+            if "Instagram Story" in platforms and ig_id and f"ig_story_{i}" not in done:
+                done[f"ig_story_{i}"] = ig_story(ig_id, token, url)
+                print(f"{key}: instagram story {i + 1}/{len(files)} {done[f'ig_story_{i}']}")
+        except GraphError as exc:
+            failures += 1
+            done.setdefault("errors", []).append(str(exc)[:200])
+            print(f"{key}: story {i + 1} FAILED {exc}")
+    return failures
+
+
 def threads_caption(caption):
     if len(caption) <= THREADS_LIMIT:
         return caption
@@ -251,10 +295,14 @@ def stage(day):
     return 0
 
 
-def due(plan, now):
+def due(plan, now, stories_now=False):
     """Meta slots whose time has passed today and are still inside the grace window."""
     out = []
     for n, s in meta_slots(plan):
+        if stories_now:
+            if any(p in STORY_PLATFORMS for p in s["platforms"]):
+                out.append((n, s))
+            continue
         h, m = map(int, s["time"].split(":"))
         at = now.replace(hour=h, minute=m, second=0, microsecond=0)
         if at <= now < at + timedelta(hours=SLOT_GRACE_HOURS):
@@ -262,14 +310,14 @@ def due(plan, now):
     return out
 
 
-def run(dry):
+def run(dry, stories_now=False):
     now = datetime.now(SAST)
     day = now.date().isoformat()
     plan = load_plan(day)
     if not plan:
         print(f"no social plan for {day}")
         return 0
-    slots = due(plan, now)
+    slots = due(plan, now, stories_now)
     if not slots:
         return 0
     posted = json.loads(STATE.read_text()) if STATE.exists() else {}
@@ -289,10 +337,16 @@ def run(dry):
             continue
         caption = s["caption"]
         if dry:
-            print(f"[dry-run] {s['time']} {len(files)} fliers -> FB/IG/Threads (done: {sorted(done)})\n{caption}\n")
+            print(f"[dry-run] {s['time']} {len(files)} fliers -> {', '.join(s['platforms'])} (done: {sorted(done)})\n{caption}\n")
             continue
         if page_id is None:
             page_id, _, ig_id, _ = page_info(ptok)
+        if any(p in STORY_PLATFORMS for p in s["platforms"]):
+            if not done.get("errors"):   # a failed story is recorded, not retried every tick
+                failures += post_stories(key, done, page_id, ig_id, ptok, files, s["platforms"])
+            STATE.parent.mkdir(parents=True, exist_ok=True)
+            STATE.write_text(json.dumps(posted, indent=2))
+            continue
         urls = done.get("urls")
         try:
             if "facebook" not in done:
@@ -362,12 +416,13 @@ def main():
     ap.add_argument("--stage", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--stories-now", action="store_true", help="post today's story slot now, whatever the time")
     args = ap.parse_args()
     if args.check:
         return check()
     if args.stage:
         return stage(date.today().isoformat())
-    return run(args.dry_run or os.environ.get("META_POST_DRY_RUN") == "1")
+    return run(args.dry_run or os.environ.get("META_POST_DRY_RUN") == "1", args.stories_now)
 
 
 if __name__ == "__main__":

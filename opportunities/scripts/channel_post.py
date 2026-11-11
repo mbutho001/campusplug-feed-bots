@@ -153,12 +153,22 @@ def tiktok_post(slot, video):
     options = info.get("privacy_level_options") or ["SELF_ONLY"]
     privacy = "PUBLIC_TO_EVERYONE" if "PUBLIC_TO_EVERYONE" in options else options[0]
     size = video.stat().st_size
-    init = tt_call("/post/publish/video/init/", tok, {
-        "post_info": {"title": slot["caption"], "privacy_level": privacy,
-                      "disable_duet": False, "disable_stitch": False, "disable_comment": False,
-                      "video_cover_timestamp_ms": 1200, "brand_organic_toggle": True},
-        "source_info": {"source": "FILE_UPLOAD", "video_size": size, "chunk_size": size,
-                        "total_chunk_count": 1}})
+
+    def init_post(level):
+        return tt_call("/post/publish/video/init/", tok, {
+            "post_info": {"title": slot["caption"], "privacy_level": level,
+                          "disable_duet": False, "disable_stitch": False, "disable_comment": False,
+                          "video_cover_timestamp_ms": 1200, "brand_organic_toggle": True},
+            "source_info": {"source": "FILE_UPLOAD", "video_size": size, "chunk_size": size,
+                            "total_chunk_count": 1}})
+    try:
+        init = init_post(privacy)
+    except PostError as exc:
+        # An unaudited app may only post SELF_ONLY, even when the account offers public.
+        if "unaudited_client" not in str(exc) or privacy == "SELF_ONLY":
+            raise
+        privacy = "SELF_ONLY"
+        init = init_post(privacy)
     http("PUT", init["upload_url"], body=video.read_bytes(), timeout=600,
          headers={"Content-Type": "video/mp4", "Content-Range": f"bytes 0-{size - 1}/{size}"})
     pid = init["publish_id"]
@@ -191,8 +201,11 @@ def whatsapp_post(slot, files):
     out = (proc.stdout + proc.stderr).strip()
     if proc.returncode != 0:
         raise PostError(f"whatsapp: {out[-500:]}")
-    last = out.splitlines()[-1] if out else ""
-    return last.removeprefix("posted ").strip() or "sent", "to the WhatsApp Channel"
+    # Baileys prints libsignal stack traces to stderr; the result is the "posted <id> to ..." line.
+    done = [l for l in proc.stdout.splitlines() if l.startswith("posted ")]
+    if not done:
+        raise PostError(f"whatsapp: no confirmation line: {out[-500:]}")
+    return done[-1].removeprefix("posted ").split(" to ")[0].strip(), "to the WhatsApp Channel"
 
 
 # ---------------------------------------------------------------- plan
@@ -230,7 +243,7 @@ def run(dry, only=None, force=False):
         if only and platform not in only:
             continue
         key = f"{day}#{platform}"
-        if key in posted:
+        if key in posted and not (force and "error" in posted[key]):
             continue
         h, m = map(int, s["time"].split(":"))
         at = now.replace(hour=h, minute=m, second=0, microsecond=0)

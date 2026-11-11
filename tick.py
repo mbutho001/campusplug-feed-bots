@@ -70,11 +70,14 @@ REPEAT = {
 MANUAL = {
     "channel-check": (OPP, [PY, "scripts/channel_post.py", "--check"], 5),
     "meta-check": (OPP, [PY, "scripts/meta_post.py", "--check"], 5),
-    "shorts": (OPP, [PY, "scripts/shorts.py"], 20),  # re-render today's Short after a failure
+    "shorts": (OPP, [PY, "scripts/shorts.py"], 20),
+    # Catch-up posts after a fix: today's IG/FB stories and today's failed TikTok, whatever the time.
+    "stories-now": (OPP, [PY, "scripts/meta_post.py", "--stories-now"], 15),
+    "tiktok-now": (OPP, [PY, "scripts/channel_post.py", "--only", "tiktok", "--force"], 20),  # re-render today's Short after a failure
 }
 
 # Each job logs where its cron line used to (logs/<job>.log), so the logs read the same.
-LOG_NAME = {"opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "meta-post": "meta_post", "channel-post": "channel_post", "publish": "publish", "scout": "scout",
+LOG_NAME = {"opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "meta-post": "meta_post", "channel-post": "channel_post", "stories-now": "meta_post", "tiktok-now": "channel_post", "publish": "publish", "scout": "scout",
             "report-daily": "report", "report-weekly": "report"}
 
 
