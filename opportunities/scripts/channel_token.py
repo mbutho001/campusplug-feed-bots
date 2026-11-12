@@ -137,18 +137,35 @@ def x():
 
 
 def linkedin():
-    """Composio API key (dashboard.composio.dev -> Settings -> API keys) + the connected account id
-    of the Campus Plug page admin (Claude reads it from Composio after you approve the connection)."""
-    key = getpass.getpass("Composio API key (hidden): ").strip()
-    ca = input("LinkedIn connected account id (ca_..., Claude gives you this): ").strip()
-    if not (key and ca):
-        sys.exit("Empty value - nothing saved.")
-    os.environ.update(COMPOSIO_API_KEY=key, LINKEDIN_CONNECTED_ACCOUNT=ca)
+    """LinkedIn app "Campus Plug Publisher" (264231871): Auth tab -> Client ID / Primary Client Secret.
+    Works only after LinkedIn approves the Community Management API for the app."""
+    cid = input("LinkedIn Client ID: ").strip()
+    csec = getpass.getpass("LinkedIn Client Secret (hidden): ").strip()
+    state = secrets.token_urlsafe(16)
+    url = "https://www.linkedin.com/oauth/v2/authorization?" + urllib.parse.urlencode({
+        "response_type": "code", "client_id": cid, "redirect_uri": "https://campusplug.club/", "state": state,
+        "scope": "w_organization_social r_organization_social rw_organization_admin"})
+    print("\nOpen this, sign in as the Campus Plug page admin and click Allow:\n" + url)
+    webbrowser.open(url)
+    back = getpass.getpass("\nPaste the full address you land on (https://campusplug.club/?code=...) (hidden): ").strip()
+    q = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(back).query))
+    if q.get("state") != state or "code" not in q:
+        sys.exit(f"No valid code in that address ({q.get('error_description') or 'state mismatch'}).")
+    tok = post_form("https://www.linkedin.com/oauth/v2/accessToken", {
+        "grant_type": "authorization_code", "code": q["code"], "client_id": cid, "client_secret": csec,
+        "redirect_uri": "https://campusplug.club/"})
+    os.environ.update(LINKEDIN_CLIENT_ID=cid, LINKEDIN_CLIENT_SECRET=csec,
+                      LINKEDIN_ACCESS_TOKEN=tok["access_token"], LINKEDIN_REFRESH_TOKEN="")
     import pro_post
     print(pro_post.linkedin_check())
-    set_secret("COMPOSIO_API_KEY", key)
-    set_secret("LINKEDIN_CONNECTED_ACCOUNT", ca)
-    print("Saved. LinkedIn posts go out at 19:00 (and the Monday 12:00 carousel).")
+    set_secret("LINKEDIN_CLIENT_ID", cid)
+    set_secret("LINKEDIN_CLIENT_SECRET", csec)
+    set_secret("LINKEDIN_ACCESS_TOKEN", tok["access_token"])
+    if tok.get("refresh_token"):
+        set_secret("LINKEDIN_REFRESH_TOKEN", tok["refresh_token"])
+        print("Saved (with refresh token - renews itself).")
+    else:
+        print("Saved. No refresh token was issued: rerun this every ~60 days.")
 
 
 if __name__ == "__main__":

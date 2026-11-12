@@ -3,10 +3,9 @@
 X        native X API v2, OAuth 1.0a user context (the @CampusPlug_SA app's own keys):
          secrets X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET.
          One square flier + the slot caption (which already carries the tracked Play link).
-LinkedIn Composio (its LinkedIn app already has w_organization_social, so the Campus Plug
-         company page can post without our own Community Management API review):
-         secrets COMPOSIO_API_KEY, LINKEDIN_CONNECTED_ACCOUNT (Composio connected account id of
-         the page admin), optional LINKEDIN_ORG_ID (default 145421420 = linkedin.com/company/campusplugsa).
+LinkedIn our own app "Campus Plug Publisher" (264231871) with the Community Management API, posting
+         as urn:li:organization:145421420: secrets LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET and
+         LINKEDIN_REFRESH_TOKEN (rotates into state/linkedin-token.json) or LINKEDIN_ACCESS_TOKEN (60 days).
 
 A platform without its secrets is off: the poster returns (None, reason).
 """
@@ -110,40 +109,83 @@ def x_check():
     return f"X: @{(r.get('data') or {}).get('username')}"
 
 
-# ---------------------------------------------------------------- LinkedIn (Composio)
-
-def _composio():
-    key, ca = _env("COMPOSIO_API_KEY"), _env("LINKEDIN_CONNECTED_ACCOUNT")
-    if not (key and ca):
-        return None, None
-    from composio import Composio  # pip install composio
-    return Composio(api_key=key), ca
+# ---------------------------------------------------------------- LinkedIn (own app, posts as the page)
+# App "Campus Plug Publisher" (264231871), verified by the Campus Plug page; needs the Community
+# Management API (requested 2026-11-12). Composio's managed LinkedIn app has no organization scopes.
+LI_API = "https://api.linkedin.com/rest"
+LI_STATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "state", "linkedin-token.json")
 
 
-def _li_exec(client, ca, slug, args):
-    res = client.tools.execute(slug, args, connected_account_id=ca, dangerously_skip_version_check=True)
-    res = res if isinstance(res, dict) else getattr(res, "model_dump", lambda: res)()
-    if not res.get("successful"):
-        raise ProPostError(f"LinkedIn {slug}: {res.get('error') or res}"[:500])
-    return res.get("data") or {}
+def _li_token():
+    """Access token: refreshed from the newest refresh token when one exists, else the stored token."""
+    cid, csec = _env("LINKEDIN_CLIENT_ID"), _env("LINKEDIN_CLIENT_SECRET")
+    saved = {}
+    if os.path.exists(LI_STATE):
+        try:
+            saved = json.load(open(LI_STATE))
+        except ValueError:
+            saved = {}
+    refresh = saved.get("refresh_token") or _env("LINKEDIN_REFRESH_TOKEN")
+    if refresh and cid and csec:
+        data = urllib.parse.urlencode({"grant_type": "refresh_token", "refresh_token": refresh,
+                                       "client_id": cid, "client_secret": csec}).encode()
+        try:
+            with urllib.request.urlopen(urllib.request.Request(
+                    "https://www.linkedin.com/oauth/v2/accessToken", data=data), timeout=60) as r:
+                tok = json.loads(r.read())
+            os.makedirs(os.path.dirname(LI_STATE), exist_ok=True)
+            json.dump({"refresh_token": tok.get("refresh_token", refresh), "refreshed": time.strftime("%Y-%m-%d")},
+                      open(LI_STATE, "w"))
+            os.chmod(LI_STATE, 0o600)
+            return tok["access_token"]
+        except urllib.error.HTTPError as e:
+            raise ProPostError(f"LinkedIn token refresh: HTTP {e.code} {e.read().decode(errors='replace')[:300]}")
+    return _env("LINKEDIN_ACCESS_TOKEN") or None
+
+
+def _li(method, path, tok, body=None, raw=None, ctype="application/json", url=None):
+    headers = {"Authorization": f"Bearer {tok}", "LinkedIn-Version": _env("LINKEDIN_VERSION") or "202510",
+               "X-Restli-Protocol-Version": "2.0.0"}
+    data = raw if raw is not None else (json.dumps(body).encode() if body is not None else None)
+    if data is not None:
+        headers["Content-Type"] = ctype
+    req = urllib.request.Request(url or f"{LI_API}{path}", data=data, method=method, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=180) as r:
+            txt = r.read()
+            return json.loads(txt) if txt else {}, dict(r.headers)
+    except urllib.error.HTTPError as e:
+        raise ProPostError(f"LinkedIn {method} {path or url} -> HTTP {e.code}: {e.read().decode(errors='replace')[:400]}")
 
 
 def linkedin_post(text, images):
-    client, ca = _composio()
-    if not client:
-        return None, "COMPOSIO_API_KEY / LINKEDIN_CONNECTED_ACCOUNT not set - LinkedIn posting is off"
-    org = _env("LINKEDIN_ORG_ID") or LINKEDIN_ORG_DEFAULT
-    args = {"author": f"urn:li:organization:{org}", "commentary": text[:3000], "visibility": "PUBLIC"}
-    if images:
-        args["images"] = [str(p) for p in images[:20]]   # the SDK uploads local paths for file fields
-    data = _li_exec(client, ca, "LINKEDIN_CREATE_LINKED_IN_POST", args)
-    pid = data.get("x_restli_id") or data.get("id") or data.get("post_id") or json.dumps(data)[:120]
-    return pid, f"to linkedin.com/company/{org}"
+    tok = _li_token()
+    if not tok:
+        return None, "LINKEDIN_* secrets not set - LinkedIn posting is off"
+    org = f"urn:li:organization:{_env('LINKEDIN_ORG_ID') or LINKEDIN_ORG_DEFAULT}"
+    ids = []
+    for p in images[:20]:
+        init, _ = _li("POST", "/images?action=initializeUpload", tok, {"initializeUploadRequest": {"owner": org}})
+        v = init["value"]
+        _li("PUT", "", tok, raw=open(p, "rb").read(), ctype="application/octet-stream", url=v["uploadUrl"])
+        ids.append(v["image"])
+    post = {"author": org, "commentary": text[:3000], "visibility": "PUBLIC",
+            "distribution": {"feedDistribution": "MAIN_FEED", "targetEntities": [], "thirdPartyDistributionChannels": []},
+            "lifecycleState": "PUBLISHED", "isReshareDisabledByAuthor": False}
+    if len(ids) == 1:
+        post["content"] = {"media": {"id": ids[0]}}
+    elif ids:
+        post["content"] = {"multiImage": {"images": [{"id": i} for i in ids]}}
+    _, hdr = _li("POST", "/posts", tok, post)
+    pid = hdr.get("x-restli-id") or hdr.get("X-RestLi-Id") or "posted"
+    return pid, f"to linkedin.com/company/{org.rsplit(':', 1)[1]}"
 
 
 def linkedin_check():
-    client, ca = _composio()
-    if not client:
+    tok = _li_token()
+    if not tok:
         return "LinkedIn: secrets not set"
-    data = _li_exec(client, ca, "LINKEDIN_GET_COMPANY_INFO", {"role": "ADMINISTRATOR"})
-    return "LinkedIn: admin of " + json.dumps(data)[:200]
+    org = _env("LINKEDIN_ORG_ID") or LINKEDIN_ORG_DEFAULT
+    data, _ = _li("GET", f"/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&state=APPROVED", tok)
+    orgs = [e.get("organization") for e in data.get("elements", [])]
+    return f"LinkedIn: admin of {orgs}; posting as urn:li:organization:{org}"
