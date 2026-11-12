@@ -20,6 +20,8 @@ Values are typed hidden and go straight into GitHub secrets; nothing is printed 
 Needs the gh CLI logged in with access to mbutho001/campusplug-feed-bots.
 """
 import getpass
+import os
+from pathlib import Path
 import http.server
 import json
 import secrets
@@ -117,11 +119,42 @@ def tiktok():
     set_secret("TIKTOK_REFRESH_TOKEN", tok["refresh_token"])
 
 
+def x():
+    """X developer portal -> your app -> Keys and tokens. App permissions must be Read and write
+    BEFORE you generate the Access Token, or posts fail with 403."""
+    print("developer.x.com -> Projects & Apps -> your app -> Keys and tokens (signed in as @CampusPlug_SA).")
+    vals = {n: getpass.getpass(f"{label} (hidden): ").strip() for n, label in (
+        ("X_API_KEY", "API Key (consumer key)"), ("X_API_SECRET", "API Key Secret"),
+        ("X_ACCESS_TOKEN", "Access Token"), ("X_ACCESS_SECRET", "Access Token Secret"))}
+    if not all(vals.values()):
+        sys.exit("One of the four values was empty - nothing saved.")
+    os.environ.update(vals)
+    import pro_post
+    print(pro_post.x_check())          # proves the keys work before saving them
+    for n, v in vals.items():
+        set_secret(n, v)
+    print("Saved. X posts go out at 13:00 and 20:30.")
+
+
+def linkedin():
+    """Composio API key (dashboard.composio.dev -> Settings -> API keys) + the connected account id
+    of the Campus Plug page admin (Claude reads it from Composio after you approve the connection)."""
+    key = getpass.getpass("Composio API key (hidden): ").strip()
+    ca = input("LinkedIn connected account id (ca_..., Claude gives you this): ").strip()
+    if not (key and ca):
+        sys.exit("Empty value - nothing saved.")
+    os.environ.update(COMPOSIO_API_KEY=key, LINKEDIN_CONNECTED_ACCOUNT=ca)
+    import pro_post
+    print(pro_post.linkedin_check())
+    set_secret("COMPOSIO_API_KEY", key)
+    set_secret("LINKEDIN_CONNECTED_ACCOUNT", ca)
+    print("Saved. LinkedIn posts go out at 19:00 (and the Monday 12:00 carousel).")
+
+
 if __name__ == "__main__":
-    which = " ".join(sys.argv[1:]).strip().lower() or input("Which? Type youtube or tiktok: ").strip().lower()
-    if which.startswith("y"):
-        youtube()
-    elif which.startswith("t"):
-        tiktok()
-    else:
-        sys.exit(f"Didn't understand {which!r} - run it again and type youtube or tiktok.")
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    which = " ".join(sys.argv[1:]).strip().lower() or input("Which? youtube, tiktok, x or linkedin: ").strip().lower()
+    fn = {"youtube": youtube, "tiktok": tiktok, "x": x, "linkedin": linkedin}.get(which)
+    if not fn:
+        sys.exit(f"Didn't understand {which!r} - use youtube, tiktok, x or linkedin.")
+    fn()

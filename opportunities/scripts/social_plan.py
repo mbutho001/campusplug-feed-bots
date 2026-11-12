@@ -43,7 +43,7 @@ WEEK = 7
 CAROUSEL_MAX = 9
 
 # Platforms where a caption link is clickable get one; the rest say "link in bio".
-LINKED = {"x", "facebook", "whatsapp"}
+LINKED = {"x", "facebook", "whatsapp", "linkedin"}
 BIO_LINE = f"📲 {APP_NAME} is free on Android — link in bio."
 
 
@@ -130,6 +130,10 @@ def build_plan(items, entries, featured, today, when):
              note="Carousel, one flier per slide. On Facebook the caption link is clickable — "
                   "swap the bio line for " + tracked_play_url("facebook", "social")),
     ]
+    # LinkedIn (company page, via pro_post.py): the same hero carousel, with a clickable tracked link.
+    slots.append(slot("19:00", ["LinkedIn"], heroes, "portrait", "linkedin", entries,
+                      caption=with_link(carousel_caption(heroes), "linkedin"),
+                      note="Posted by channel_post.py (pro_post.linkedin_post) as the Campus Plug page."))
     # X gets heroes 2 and 3 when there are that many; a thin day just has fewer slots.
     slots[2:2] = [slot("13:00", ["X"], h[1:2], "square", "x", entries)] if len(h) > 1 else []
     if len(h) > 2:

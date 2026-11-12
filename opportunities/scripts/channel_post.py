@@ -46,7 +46,9 @@ OUT = ROOT / "out"
 STATE = ROOT / "state" / "channel-posted.json"
 TIKTOK_STATE = ROOT / "state" / "tiktok-token.json"
 SLOT_GRACE_HOURS = 3
-PLATFORM_OF = {"WhatsApp Channel": "whatsapp", "TikTok": "tiktok", "YouTube Shorts": "youtube"}
+PLATFORM_OF = {"WhatsApp Channel": "whatsapp", "TikTok": "tiktok", "YouTube Shorts": "youtube",
+               "X": "x", "LinkedIn": "linkedin"}
+MULTI_SLOT = {"x", "linkedin"}   # several slots a day: the state key carries the slot time
 
 
 class PostError(RuntimeError):
@@ -249,7 +251,7 @@ def run(dry, only=None, force=False):
     for platform, s in channel_slots(plan):
         if only and platform not in only:
             continue
-        key = f"{day}#{platform}"
+        key = f"{day}#{platform}" + (f"@{s['time']}" if platform in MULTI_SLOT else "")
         if key in posted and not (force and "error" in posted[key]):
             continue
         h, m = map(int, s["time"].split(":"))
@@ -269,7 +271,7 @@ def run(dry, only=None, force=False):
         if platform in ("tiktok", "youtube") and not video.exists():
             print(f"{key}: no Short for today - skipped")
             continue
-        if platform == "whatsapp" and not files:
+        if platform in ("whatsapp", "x", "linkedin") and not files:
             print(f"{key}: no staged fliers - skipped")
             continue
         if dry:
@@ -277,7 +279,10 @@ def run(dry, only=None, force=False):
                   f"{s.get('title', '')}\n{s['caption']}\n")
             continue
         try:
+            import pro_post
             poster = {"whatsapp": lambda: whatsapp_post(s, files),
+                      "x": lambda: pro_post.x_post(s["caption"], files[:1]),
+                      "linkedin": lambda: pro_post.linkedin_post(s["caption"], files),
                       "tiktok": lambda: tiktok_post(s, video),
                       "youtube": lambda: youtube_post(s, video)}[platform]
             pid, note = poster()
@@ -286,7 +291,7 @@ def run(dry, only=None, force=False):
                 continue
             posted[key] = {"id": pid, "at": now.isoformat(timespec="minutes")}
             print(f"{key}: posted {pid} {note}")
-        except (PostError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError) as exc:
+        except Exception as exc:  # noqa: BLE001 - one platform failing never stops the others
             failures += 1
             # Mark attempted so a broken post never retries every 10 minutes all afternoon.
             posted[key] = {"error": str(exc)[:300], "at": now.isoformat(timespec="minutes")}
@@ -317,6 +322,13 @@ def check():
         except (PostError, urllib.error.URLError, KeyError) as exc:
             ok = False
             print(f"{name}: {exc}")
+    import pro_post
+    for fn in (pro_post.x_check, pro_post.linkedin_check):
+        try:
+            print(fn())
+        except Exception as exc:  # noqa: BLE001
+            ok = False
+            print(f"{fn.__name__}: {exc}")
     if env("WA_AUTH_KEY") and env("WA_CHANNEL"):
         proc = subprocess.run(["node", str(SCRIPTS / "wa" / "wa_post.mjs"), "--check"], capture_output=True,
                               text=True, timeout=120, cwd=SCRIPTS / "wa")
