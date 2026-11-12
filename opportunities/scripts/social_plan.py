@@ -43,13 +43,17 @@ WEEK = 7
 CAROUSEL_MAX = 9
 
 # Platforms where a caption link is clickable get one; the rest say "link in bio".
-LINKED = {"x", "facebook", "whatsapp", "linkedin"}
+# X is NOT linked on purpose: X API pay-per-use charges $0.20 for a post with a URL vs $0.015 without.
+LINKED = {"facebook", "whatsapp", "linkedin"}
 BIO_LINE = f"📲 {APP_NAME} is free on Android — link in bio."
 
 
 def with_link(text, platform):
     if platform not in LINKED:
-        return f"{text}\n\n{BIO_LINE}" if platform != "x" else text
+        if platform == "x":
+            tail = "\nFree app, link in bio 📲"
+            return text + tail if len(text) + len(tail) <= LIMITS["x"] else text
+        return f"{text}\n\n{BIO_LINE}"
     link = tracked_play_url(platform, "social")
     if platform == "x":
         # X counts any link as 23 characters.
