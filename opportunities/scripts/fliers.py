@@ -47,8 +47,8 @@ CHROME = "/usr/bin/google-chrome"
 PLAY_URL = "https://play.google.com/store/apps/details?id=co.qconnec.campusplug"
 HANDLE = "@campusplugsa"     # planned handle - change here if another is registered
 # Student verification is not live in v2 - never print "verified students only".
-FOOTER_LEFT = "Free for SA students · Your Campus, Plugged In."
-CTA_HEADLINE = "Full details & apply link on CampusPlug"
+FOOTER_LEFT = "Free for SA students · Earn · save · spend"
+CTA_HEADLINE = "Full details & apply link on Campus Plug"
 CTA_SUB = "Free for students. Tap the link in bio or scan to download."
 SEE_APP = "See the app"
 

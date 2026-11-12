@@ -27,7 +27,8 @@ import urllib.request
 
 REPO = "mbutho001/campusplug-feed-bots"
 GRAPH = "https://graph.facebook.com/v23.0"
-PAGE_NAME = "CampusPlug"
+PAGE_NAME = "Campus Plug SA"   # renamed from "CampusPlug" 2026-11-06; the page id below also matches
+PAGE_ID = "61593137672679"
 
 
 def get(url, params, fatal=True):
@@ -55,7 +56,7 @@ def facebook():
         "client_secret": secret, "fb_exchange_token": short})["access_token"]
     pages = get(f"{GRAPH}/me/accounts", {"fields": "id,name,access_token,instagram_business_account{username}",
                                         "access_token": long_user}).get("data", [])
-    page = next((p for p in pages if p.get("name") == PAGE_NAME), None)
+    page = next((p for p in pages if p.get("name") in (PAGE_NAME, "CampusPlug") or p.get("id") == PAGE_ID), None)
     if not page:
         sys.exit("CampusPlug Page not in this token's pages: " + ", ".join(p.get("name", "?") for p in pages))
     ig = (page.get("instagram_business_account") or {}).get("username")

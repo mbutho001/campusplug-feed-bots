@@ -38,18 +38,18 @@ INTRO, OUTRO, FLIER_MIN, FADE = 2.6, 3.2, 4.0, 0.35
 CARD = """<!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="{assets}/fonts.css"><link rel="stylesheet" href="{assets}/tokens.css">
 <style>
+/* Spaza-wall brand (app DESIGN.md): whitewash, ink, Lilita One headings, Figtree text, one orange action. */
 html,body{{margin:0;width:1080px;height:1920px;overflow:hidden}}
-body{{background:radial-gradient(circle at 50% 30%, var(--warm-800), var(--warm-950) 70%);
-  color:var(--white);font-family:'Fredoka',sans-serif;display:flex;flex-direction:column;
+body{{background:#F4EFE4;color:#1A1A1A;font-family:'Figtree',sans-serif;display:flex;flex-direction:column;
   align-items:center;justify-content:center;text-align:center;padding:0 90px;box-sizing:border-box}}
-img{{width:260px;height:260px;margin-bottom:70px;border-radius:56px}}
-.kicker{{font-family:'Quicksand',sans-serif;font-weight:700;font-size:46px;letter-spacing:6px;
-  color:var(--orange-400);text-transform:uppercase;margin-bottom:34px}}
-h1{{font-size:112px;line-height:1.04;margin:0 0 46px;font-weight:700}}
-h1 em{{font-style:normal;color:var(--orange-500)}}
-p{{font-family:'Quicksand',sans-serif;font-size:50px;line-height:1.3;color:var(--gray-100);margin:0}}
-.pill{{margin-top:80px;background:var(--orange-500);color:var(--black);font-weight:700;
-  font-size:52px;border-radius:999px;padding:30px 64px}}
+img{{width:240px;height:240px;margin-bottom:70px;object-fit:contain}}
+.kicker{{font-weight:800;font-size:44px;letter-spacing:5px;color:#1A1A1A;background:#F2C230;
+  text-transform:uppercase;margin-bottom:44px;padding:14px 30px;border-radius:12px}}
+h1{{font-family:'Lilita One',sans-serif;font-weight:400;font-size:120px;line-height:1.02;margin:0 0 46px}}
+h1 em{{font-style:normal;color:#C2410C}}
+p{{font-size:50px;font-weight:500;line-height:1.3;color:#5E5A52;margin:0}}
+.pill{{margin-top:80px;background:#F37023;color:#1A1A1A;font-weight:800;
+  font-size:52px;border-radius:12px;padding:30px 64px}}
 </style></head><body>{body}</body></html>"""
 
 
