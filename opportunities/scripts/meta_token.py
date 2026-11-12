@@ -28,7 +28,7 @@ import urllib.request
 REPO = "mbutho001/campusplug-feed-bots"
 GRAPH = "https://graph.facebook.com/v23.0"
 PAGE_NAME = "Campus Plug SA"   # renamed from "CampusPlug" 2026-11-06; the page id below also matches
-PAGE_ID = "61593137672679"
+PAGE_ID = "1178829821991188"
 
 
 def get(url, params, fatal=True):
