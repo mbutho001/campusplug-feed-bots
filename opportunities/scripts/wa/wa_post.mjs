@@ -29,7 +29,10 @@ try {
       first = await sock.sendMessage(jid, { text: caption });
     }
     for (const [n, img] of images.entries()) {
-      const msg = await sock.sendMessage(jid, { image: fs.readFileSync(img), ...(n === 0 && caption ? { caption } : {}) });
+      const media = img.endsWith(".mp4")
+        ? { video: fs.readFileSync(img), mimetype: "video/mp4" }
+        : { image: fs.readFileSync(img) };
+      const msg = await sock.sendMessage(jid, { ...media, ...(n === 0 && caption ? { caption } : {}) });
       first ??= msg;
       await new Promise((r) => setTimeout(r, 1500));
     }

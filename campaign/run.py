@@ -35,6 +35,7 @@ SAST = ZoneInfo("Africa/Johannesburg")
 STATE = ROOT / "state"
 OUT = ROOT / "out"
 GRACE_HOURS = 3
+PLAN_REV = 2   # bump when make() changes which items a day has; post() rebuilds older plans
 LETTERS = "ABCD"
 APP_BOTS = ["zanele.bot@campusplug.com", "lerato.bot@campusplug.com", "sibusiso.bot@campusplug.com",
             "kabelo.bot@campusplug.com", "thandi.bot@campusplug.com"]
@@ -110,15 +111,15 @@ def make(day, voice=True):
                 files[fmt] = str(render.promo_poster(fmt, a, pz, folder / f"promo-{k}-{fmt}.png", tmp).relative_to(ROOT))
             meta = {"angle": k, "phase": ph["key"], "live": a["live"], "writer": writer}
             if wd in pr["days"]:
-                items.append(dict(id="promo-feed", time=pr["time"], platforms=["facebook", "instagram", "threads"],
+                items.append(dict(id="promo-feed", time=pr["time"], platforms=["facebook", "instagram", "threads", "whatsapp"],
                                   files=[files["portrait"]], caption=caption, **meta))
             if wd in pr["x_days"]:
                 items.append(dict(id="promo-x", time=pr["x_time"], platforms=["x"], files=[files["square"]],
                                   caption=(a["short"] + "\nFree app, link in bio")[:280], **meta))
-            if wd in pr["whatsapp_days"]:
+            if wd in pr["story_days"] and wd not in pr["days"]:
+                # Story-only days still reach the WhatsApp Channel.
                 items.append(dict(id="promo-wa", time=pr["whatsapp_time"], platforms=["whatsapp"],
-                                  files=[files["square"]], caption=f"{a['short']}\n\nGet Campus Plug: {tracked('whatsapp')}",
-                                  **meta))
+                                  files=[files["square"]], caption=a["short"], **meta))
             if wd in pr["linkedin_days"]:
                 items.append(dict(id="promo-li", time=pr["time"], platforms=["linkedin"], files=[files["portrait"]],
                                   caption=f"{caption}\n\nGet Campus Plug: {tracked('linkedin')}", **meta))
@@ -136,7 +137,7 @@ def make(day, voice=True):
                 log(f"make: Short {video.name} {secs:.1f}s")
                 text = f"{a['short']} {captions.TAGS} #PlugSeasons"
                 items.append(dict(id="promo-video", time=pr["video_time"],
-                                  platforms=["tiktok", "youtube", "facebook_video"], files=[str(video.relative_to(ROOT))],
+                                  platforms=["tiktok", "youtube", "facebook_video", "whatsapp"], files=[str(video.relative_to(ROOT))],
                                   caption=text, title=(a["headline"].replace("*", "") + " | Campus Plug")[:95],
                                   tags=["Campus Plug", "South Africa", "students", "bursaries", "Plug Seasons"],
                                   angle=k, phase=ph["key"], live=a["live"]))
@@ -160,9 +161,16 @@ def make(day, voice=True):
         label = "Brand battle" if poll["kind"] == "battle" else "Daily poll"
         app_text = (f"🗳️ {label}: {poll['question']}\n\nTap your answer above. One vote each, results every Monday "
                     f"on our socials (#PlugPulse).\n\n#CampusPlug #PlugPulse")
-        items.append(dict(id="poll-app", time=po["app_time"], platforms=["app_poll"], poll=poll, dedupe=key,
+        items.append(dict(id="poll-app", time=po["app_time"], platforms=["app_poll"], poll=poll, dedupe=key, grace="day",
                           bot=bot, caption=app_text))
-        items.append(dict(id="poll-threads", time=po["threads_time"], platforms=["threads_poll"], poll=poll,
+        wa_poll = render.poll_poster("square", poll["question"], poll["options"], label,
+                                     folder / f"poll-{poll['id']}-square.png", tmp)
+        items.append(dict(id="poll-wa", time=po["threads_time"], platforms=["whatsapp"], poll=poll,
+                          files=[str(wa_poll.relative_to(ROOT))], grace="day",
+                          caption=(f"🗳️ {label}: {poll['question']}\n\n" + "\n".join(
+                              f"{LETTERS[i]}) {o}" for i, o in enumerate(poll["options"]))
+                              + "\n\nVote in the Campus Plug app (one vote each). Results every Monday.")))
+        items.append(dict(id="poll-threads", time=po["threads_time"], platforms=["threads_poll"], poll=poll, grace="day",
                           caption=f"{label}: {poll['question']}\n\nVote here or in the Campus Plug app. Results Monday. #PlugPulse"))
         if wd in po["x_days"]:
             items.append(dict(id="poll-x", time=po["threads_time"], platforms=["x_poll"], poll=poll,
@@ -184,6 +192,7 @@ def make(day, voice=True):
     plan = jload(plan_path(day), {"date": day.isoformat(), "items": []})
     keep = [i for i in plan["items"] if i["id"].startswith("pulse")]
     plan["items"] = items + keep
+    plan["rev"] = PLAN_REV
     jsave(plan_path(day), plan)
     log(f"make: {len(items)} items for {day} ({ph['name']}): " + ", ".join(i["id"] for i in items))
     return 0
@@ -202,7 +211,7 @@ def results_item(day, folder, tmp):
     lines = [f"{o}: {pct}%" for o, pct in zip(r["options"], r["pct"])]
     f = render.results_poster("portrait", r["question"], r["options"], r["pct"], r["total"],
                               folder / f"results-{r['id']}-portrait.png", tmp)
-    return dict(id="results", time="12:00", platforms=["facebook", "instagram", "threads"], files=[str(f.relative_to(ROOT))],
+    return dict(id="results", time="12:00", platforms=["facebook", "instagram", "threads", "whatsapp"], files=[str(f.relative_to(ROOT))],
                 caption=(f"Plug Pulse results: {r['question']}\n\n" + "\n".join(lines)
                          + f"\n\nBased on {r['total']} votes from Campus Plug students ({', '.join(r['sources'])}), "
                          "not a scientific sample. New poll every morning in the app.\n\n" + captions.TAGS + " #PlugPulse"))
@@ -329,7 +338,11 @@ def post_item(item, platform, day, done):
     if platform == "linkedin":
         return pro_post.linkedin_post(cap, files)
     if platform == "whatsapp":
-        return channel_post.whatsapp_post({"caption": cap}, files)
+        link = tracked("whatsapp")
+        wcap = cap.replace("link in bio.", f"→ {link}").replace("link in bio", f"→ {link}")
+        if link not in wcap:
+            wcap += f"\n\nGet Campus Plug (free, Android): {link}"
+        return channel_post.whatsapp_post({"caption": wcap}, files)
     if platform == "tiktok":
         return channel_post.tiktok_post({"caption": cap}, files[0])
     if platform == "youtube":
@@ -387,12 +400,19 @@ def post(dry=False, force_ids=()):
     plan = jload(plan_path(day), None)
     if not plan:
         return 0
+    if plan.get("rev", 1) < PLAN_REV and not dry:
+        log(f"post: plan rev {plan.get('rev', 1)} < {PLAN_REV}, rebuilding today's plan first")
+        make(day)
+        if any(i["id"].startswith("pulse") for i in plan["items"]):
+            pulse(day)
+        plan = jload(plan_path(day), plan)
     posted = jload(STATE / "posted.json", {})
     failures = 0
     for item in plan["items"]:
         h, m = map(int, item["time"].split(":"))
         at = now.replace(hour=h, minute=m, second=0, microsecond=0)
-        if item["id"] not in force_ids and not (at <= now < at + timedelta(hours=GRACE_HOURS)):
+        end = now.replace(hour=23, minute=59) if item.get("grace") == "day" else at + timedelta(hours=GRACE_HOURS)
+        if item["id"] not in force_ids and not (at <= now <= end):
             continue
         key = f"{day.isoformat()}#{item['id']}"
         done = posted.setdefault(key, {})

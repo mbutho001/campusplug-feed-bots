@@ -5,7 +5,7 @@ Runs on the feed-bots tick (GitHub Actions). Nothing here needs the home PC.
 | SAST | Job | What |
 |---|---|---|
 | 06:45 | `campaign-make` | Today's plan: promo posters (portrait/square/story), UGC-style Short, daily poll |
-| 08:15 Wed/Sat | post | WhatsApp Channel promo |
+| all | post | WhatsApp Channel gets every campaign post: promos, Shorts (video), daily poll (options + poster), pulse, results |
 | 10:00 / 10:05 | post | Daily poll in the app feed (bot account) + native Threads poll; X poll Tue/Thu |
 | 12:00 Mon/Thu/Sat | post | FB + IG story |
 | 12:00 Mon | post | Last week's Plug Pulse results poster (only if a poll got 5+ votes) |

@@ -14,7 +14,7 @@
     "plug_seasons": false
   },
   "promo": {
-    "_note": "Intermittent: promo posts on these weekdays (0=Mon). Videos on video_days. Times SAST.",
+    "_note": "Intermittent: promo posts on these weekdays (0=Mon). Videos on video_days. Times SAST. The WhatsApp Channel gets EVERY campaign post (promos, videos, polls, pulse, results); whatsapp_time is used on story-only days.",
     "days": [0, 2, 4, 5],
     "time": "18:00",
     "platforms": ["facebook", "instagram", "threads"],
@@ -39,7 +39,7 @@
   "pulse": {
     "_note": "Reposts the best audited trend-desk post of the day to socials. Category plan by weekday.",
     "time": "14:30",
-    "platforms": ["threads", "facebook"],
+    "platforms": ["threads", "facebook", "whatsapp"],
     "x": true,
     "min_confidence": 0.85,
     "categories_by_weekday": {
