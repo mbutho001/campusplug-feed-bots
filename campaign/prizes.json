@@ -1,0 +1,57 @@
+{
+  "_note": "The ONLY source of prize claims. A prize may be named as winnable ('win', 'up for grabs', value) only when status is 'live' AND funded_by, value_rand, entry_opens, entry_closes, draw_date and rules_url are all set. Until then posts run in TEASER mode: 'prize drops are coming, register + follow so you are first in' with no promise. CPA s36: free entry, rules published before entry opens, draw witnessed, winners told within the published window. Meta: no 'share to enter' or tagging on personal timelines; every post says the promotion is not run by Meta. Entrants 18+ for any draw (POPIA child = under 18).",
+  "prizes": [
+    {
+      "id": "brand-hamper",
+      "name": "brand hampers",
+      "cadence": "weekly",
+      "status": "pending",
+      "funded_by": null,
+      "value_rand": null,
+      "entry_opens": null,
+      "entry_closes": null,
+      "draw_date": null,
+      "rules_url": null,
+      "how_to_enter": "complete the week's quest card in the app"
+    },
+    {
+      "id": "airtime",
+      "name": "airtime and data vouchers",
+      "cadence": "weekly",
+      "status": "pending",
+      "funded_by": null,
+      "value_rand": null,
+      "entry_opens": null,
+      "entry_closes": null,
+      "draw_date": null,
+      "rules_url": null,
+      "how_to_enter": "vote in the daily poll and check in 5 days of the week"
+    },
+    {
+      "id": "laptop",
+      "name": "a laptop",
+      "cadence": "season",
+      "status": "pending",
+      "funded_by": null,
+      "value_rand": null,
+      "entry_opens": null,
+      "entry_closes": null,
+      "draw_date": null,
+      "rules_url": null,
+      "how_to_enter": "every quest you finish in the season is one more draw ticket"
+    },
+    {
+      "id": "cash",
+      "name": "cash prizes",
+      "cadence": "season",
+      "status": "pending",
+      "funded_by": null,
+      "value_rand": null,
+      "entry_opens": null,
+      "entry_closes": null,
+      "draw_date": null,
+      "rules_url": null,
+      "how_to_enter": "season leaderboard and Campus Cup"
+    }
+  ]
+}

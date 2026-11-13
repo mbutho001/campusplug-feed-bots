@@ -118,8 +118,8 @@ jobs:
         if: always()
         run: |
           cd .state
-          rm -rf trend-bots opportunities social-radar user-stats
-          mkdir -p trend-bots opportunities/out opportunities/state social-radar/state user-stats
+          rm -rf trend-bots opportunities social-radar user-stats campaign
+          mkdir -p trend-bots opportunities/out opportunities/state social-radar/state user-stats campaign/out
           cp ../tick-state.json . 2>/dev/null || true
           rsync -a --exclude '*.lock' --exclude 'crontab.backup*' ../trend-bots/state ../trend-bots/logs trend-bots/ 2>/dev/null || true
           cp ../opportunities/state/seen.sqlite3 ../opportunities/state/enrich.json ../opportunities/state/social-featured.json \
@@ -129,6 +129,11 @@ jobs:
           # The fliers today's Meta slots post (staged at 06:30, posted later in the day); today and yesterday only.
           for d in $(date +%F) $(date -d yesterday +%F); do
             [ -d "../opportunities/out/social-$d" ] && cp -r "../opportunities/out/social-$d" opportunities/out/
+          done
+          # Traction campaign: its state (posted, polls, results, reports) and today's + yesterday's creative.
+          rsync -a ../campaign/state ../campaign/logs campaign/ 2>/dev/null || true
+          for d in $(date +%F) $(date -d yesterday +%F); do
+            [ -d "../campaign/out/$d" ] && cp -r "../campaign/out/$d" campaign/out/
           done
           cp ../social-radar/state/seen.sqlite3 social-radar/state/ 2>/dev/null || true
           rsync -a ../social-radar/logs social-radar/ 2>/dev/null || true

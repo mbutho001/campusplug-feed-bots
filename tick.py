@@ -33,6 +33,7 @@ TREND = ROOT / "trend-bots"
 OPP = ROOT / "opportunities"
 RADAR = ROOT / "social-radar"
 STATS = ROOT / "user-stats"
+CAMP = ROOT / "campaign"
 STATE = ROOT / "tick-state.json"
 
 PY = sys.executable
@@ -53,6 +54,12 @@ DAILY = {
     "slot-evening":   ("18:30", "21:30", None, TREND, [TREND_RUN + ["slot", "evening"]], 40),
     "report-daily":   ("21:30", "23:59", None, TREND, [TREND_RUN + ["report", "daily"]], 10),
     "report-weekly":  ("08:00", "23:59", 0, TREND, [TREND_RUN + ["report", "weekly"]], 10),
+    # Traction campaign (campaign/run.py): today's plan + posters + Short, the trend-desk repost,
+    # poll results, and the Monday Plug Pulse report. Posting is the campaign-post repeat job.
+    "campaign-make":    ("06:45", "15:00", None, CAMP, [[PY, "run.py", "make"]], 30),
+    "campaign-pulse":   ("14:15", "19:00", None, CAMP, [[PY, "run.py", "pulse"]], 10),
+    "campaign-collect": ("21:45", "23:59", None, CAMP, [[PY, "run.py", "collect"]], 15),
+    "campaign-report":  ("08:30", "23:59", 0, CAMP, [[PY, "run.py", "collect"], [PY, "run.py", "report"]], 20),
 }
 
 # name: (first hour, last hour, minimum minutes between runs, cwd, command, timeout minutes)
@@ -64,6 +71,8 @@ REPEAT = {
     "meta-post":   (7, 23, 0, OPP, [PY, "scripts/meta_post.py"], 15),
     # Posts the WhatsApp Channel, TikTok and YouTube Shorts slots once each.
     "channel-post": (7, 23, 0, OPP, [PY, "scripts/channel_post.py"], 20),
+    # Posts every due item of today's campaign plan once per platform.
+    "campaign-post": (7, 23, 0, CAMP, [PY, "run.py", "post"], 30),
 }
 
 # Manual-only jobs (run with --only): token checks that post nothing.
@@ -73,11 +82,14 @@ MANUAL = {
     "shorts": (OPP, [PY, "scripts/shorts.py"], 20),
     # Catch-up posts after a fix: today's IG/FB stories and today's failed TikTok, whatever the time.
     "stories-now": (OPP, [PY, "scripts/meta_post.py", "--stories-now"], 15),
+    "campaign-dry": (CAMP, [PY, "run.py", "post", "--dry-run"], 5),
     "tiktok-now": (OPP, [PY, "scripts/channel_post.py", "--only", "tiktok", "--force"], 20),  # re-render today's Short after a failure
 }
 
 # Each job logs where its cron line used to (logs/<job>.log), so the logs read the same.
-LOG_NAME = {"opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "meta-post": "meta_post", "channel-post": "channel_post", "stories-now": "meta_post", "tiktok-now": "channel_post", "publish": "publish", "scout": "scout",
+LOG_NAME = {"campaign-make": "campaign", "campaign-pulse": "campaign", "campaign-collect": "campaign",
+            "campaign-report": "campaign", "campaign-post": "campaign",
+            "opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "meta-post": "meta_post", "channel-post": "channel_post", "stories-now": "meta_post", "tiktok-now": "channel_post", "publish": "publish", "scout": "scout",
             "report-daily": "report", "report-weekly": "report"}
 
 

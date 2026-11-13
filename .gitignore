@@ -3,3 +3,7 @@ __pycache__/
 state/
 logs/
 out/
+campaign/out/
+campaign/state/
+campaign/logs/
+campaign/__pycache__/

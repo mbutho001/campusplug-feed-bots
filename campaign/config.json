@@ -1,0 +1,64 @@
+{
+  "_note": "Campus Plug traction campaign (prizes + registration + follows, polls and brand battles, discourse/business/trend reposts). Read by campaign/run.py. Edit here, push, the next tick uses it.",
+  "start": "2026-11-13",
+  "end": "2027-01-31",
+  "rules_url": "https://campusplug.club/competitions",
+  "app_features_live": {
+    "_note": "Only features marked true may be promised in copy. Flip plug_seasons to true once app 2.0.4 is live on Play AND a real sponsored season is open in /control/seasons.",
+    "daily_check_in": true,
+    "streak_bonus": true,
+    "polls": true,
+    "feed_posts": true,
+    "referrals": true,
+    "opportunities": true,
+    "plug_seasons": false
+  },
+  "promo": {
+    "_note": "Intermittent: promo posts on these weekdays (0=Mon). Videos on video_days. Times SAST.",
+    "days": [0, 2, 4, 5],
+    "time": "18:00",
+    "platforms": ["facebook", "instagram", "threads"],
+    "whatsapp_days": [2, 5],
+    "whatsapp_time": "08:15",
+    "x_days": [0, 4],
+    "x_time": "18:10",
+    "linkedin_days": [2],
+    "video_days": [1, 4],
+    "video_time": "16:00",
+    "story_days": [0, 3, 5],
+    "story_time": "12:00"
+  },
+  "polls": {
+    "app_time": "10:00",
+    "threads_time": "10:05",
+    "x_days": [1, 3],
+    "battle_days": [0, 3, 6],
+    "poster_days": [3],
+    "poster_time": "13:30"
+  },
+  "pulse": {
+    "_note": "Reposts the best audited trend-desk post of the day to socials. Category plan by weekday.",
+    "time": "14:30",
+    "platforms": ["threads", "facebook"],
+    "x": true,
+    "min_confidence": 0.85,
+    "categories_by_weekday": {
+      "0": ["education", "student_funding", "cost_of_living", "local_news", "public_safety"],
+      "1": ["jobs", "technology", "cost_of_living"],
+      "2": ["education", "student_funding", "local_news", "public_safety", "politics"],
+      "3": ["jobs", "technology", "cost_of_living"],
+      "4": ["youth_culture", "viral", "student_life", "campus", "technology"],
+      "5": ["music", "entertainment", "sport_football", "sport_rugby_cricket", "viral"],
+      "6": ["youth_culture", "student_life", "relationships", "viral", "entertainment"]
+    },
+    "label_by_weekday": {
+      "0": "THE TALK", "1": "HUSTLE", "2": "THE TALK", "3": "HUSTLE",
+      "4": "TRENDING", "5": "TRENDING", "6": "TRENDING"
+    }
+  },
+  "report": {
+    "weekday": 0,
+    "time": "08:30",
+    "small_sample": 100
+  }
+}
