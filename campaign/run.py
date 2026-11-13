@@ -485,8 +485,7 @@ def collect():
                 scale = 100 if sum(share) > 1.5 else 1      # percent or fraction, whichever the API sends
                 for i, v in enumerate(share):
                     counts[i] += round(tv * v / scale)
-                if tv:
-                    sources.append("Threads")
+                sources.append(f"Threads ({tv})")
             except Exception as exc:  # noqa: BLE001
                 log(f"collect {k} threads: {exc}")
         if xkeys and e["refs"].get("x"):
