@@ -83,12 +83,14 @@ MANUAL = {
     # Catch-up posts after a fix: today's IG/FB stories and today's failed TikTok, whatever the time.
     "stories-now": (OPP, [PY, "scripts/meta_post.py", "--stories-now"], 15),
     "campaign-dry": (CAMP, [PY, "run.py", "post", "--dry-run"], 5),
+    # Catch-up: post today's poll items whatever the time (e.g. after a missed 10:00 slot).
+    "campaign-polls-now": (CAMP, [PY, "run.py", "post", "--force", "poll-app", "poll-threads"], 10),
     "tiktok-now": (OPP, [PY, "scripts/channel_post.py", "--only", "tiktok", "--force"], 20),  # re-render today's Short after a failure
 }
 
 # Each job logs where its cron line used to (logs/<job>.log), so the logs read the same.
 LOG_NAME = {"campaign-make": "campaign", "campaign-pulse": "campaign", "campaign-collect": "campaign",
-            "campaign-report": "campaign", "campaign-post": "campaign",
+            "campaign-report": "campaign", "campaign-post": "campaign", "campaign-dry": "campaign", "campaign-polls-now": "campaign",
             "opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "meta-post": "meta_post", "channel-post": "channel_post", "stories-now": "meta_post", "tiktok-now": "channel_post", "publish": "publish", "scout": "scout",
             "report-daily": "report", "report-weekly": "report"}
 
