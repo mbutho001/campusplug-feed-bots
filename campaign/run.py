@@ -506,7 +506,38 @@ def collect():
                       "sources": sources or ["none yet"], "collected": today.isoformat()}
     jsave(STATE / "poll-results.json", results)
     log(f"collect: {len(recent)} polls updated")
+    followers(today)
     return 0
+
+
+def followers(today):
+    """Nightly follower snapshot (FB Page, Instagram, Threads) -> state/followers.json, for the weekly traction table."""
+    import meta_post
+    snap = {}
+    try:
+        tok = meta_post.page_token()
+        if tok:
+            me = meta_post.call("GET", f"{meta_post.GRAPH}/me",
+                                {"fields": "followers_count,fan_count,instagram_business_account{followers_count}",
+                                 "access_token": tok})
+            snap["facebook"] = me.get("followers_count") or me.get("fan_count")
+            snap["instagram"] = (me.get("instagram_business_account") or {}).get("followers_count")
+    except Exception as exc:  # noqa: BLE001
+        log(f"followers meta: {exc}")
+    try:
+        ttok = meta_post.threads_token()
+        if ttok:
+            r = meta_post.call("GET", f"{meta_post.THREADS}/me/threads_insights",
+                               {"metric": "followers_count", "access_token": ttok})
+            for m in r.get("data", []):
+                if m.get("name") == "followers_count":
+                    snap["threads"] = (m.get("total_value") or {}).get("value")
+    except Exception as exc:  # noqa: BLE001
+        log(f"followers threads: {exc}")
+    hist = jload(STATE / "followers.json", {})
+    hist[today.isoformat()] = snap
+    jsave(STATE / "followers.json", hist)
+    log(f"followers: {snap}")
 
 
 def report(dry=False):
@@ -541,6 +572,18 @@ def report(dry=False):
     h.append("<h3>Campaign posts last 7 days</h3><table border=1 cellpadding=4><tr><th>Platform</th><th>Posted</th>"
              "<th>Failed</th></tr>" + "".join(f"<tr><td>{p}</td><td>{a}</td><td>{b}</td></tr>"
                                              for p, (a, b) in sorted(activity.items())) + "</table>")
+    hist = jload(STATE / "followers.json", {})
+    days = sorted(hist)
+    if days:
+        now_d = days[-1]
+        base = next((d for d in days if (date.fromisoformat(now_d) - date.fromisoformat(d)).days <= 7), now_d)
+        rows = ""
+        for plat in ("facebook", "instagram", "threads"):
+            a, b = hist[base].get(plat), hist[now_d].get(plat)
+            delta = f"{b - a:+d}" if isinstance(a, int) and isinstance(b, int) else "n/a"
+            rows += f"<tr><td>{plat}</td><td>{b if b is not None else 'n/a'}</td><td>{delta}</td></tr>"
+        h.append(f"<h3>Followers ({base} → {now_d})</h3><table border=1 cellpadding=4><tr><th>Platform</th>"
+                 f"<th>Followers</th><th>Change</th></tr>{rows}</table><p>App sign-ups: see the daily 07:00 stats mail.</p>")
     live = [p["name"] for p in prizes() if p["status"] == "live"]
     h.append(f"<p>Prize mode: <b>{'LIVE: ' + ', '.join(live) if live else 'TEASER (no prize funded yet)'}</b>. "
              "Edit campaign/prizes.json to go live.</p>")
