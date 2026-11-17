@@ -42,3 +42,10 @@ Before going live (SA Consumer Protection Act s36 + Meta promotion rules):
   until then the report uses app vote totals plus the Threads/X splits.
 - UGC-style Shorts use real app screens and a Campus Plug voice. They never show an invented student or a
   made-up testimonial. Real student UGC comes later via Plug Studio creators with signed releases.
+
+## One-off announcements
+
+`announcements.json` items (`date`, `time`, `platforms`, `files` under `assets/announce/`, `caption`) are merged into
+that day's plan by `post()` and dedupe in `state/posted.json` like any plan item. First use: 17 Nov 2026,
+"Campus Plug is coming to iPhone" (story 12:00, WhatsApp 12:15, FB/IG/Threads + LinkedIn 17:30, X 17:40,
+Short → TikTok/YouTube/FB video 19:30).

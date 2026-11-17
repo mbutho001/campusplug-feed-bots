@@ -1,0 +1,89 @@
+{
+ "_note": "One-off posts merged into that day's campaign plan by run.py post(); dedupe in state/posted.json as <date>#<id>.",
+ "items": [
+  {
+   "id": "ios-soon-story",
+   "date": "2026-11-17",
+   "time": "12:00",
+   "platforms": [
+    "facebook_story",
+    "instagram_story"
+   ],
+   "files": [
+    "assets/announce/ios-soon-story.png"
+   ],
+   "caption": "Campus Plug is coming to iPhone. Launching soon."
+  },
+  {
+   "id": "ios-soon-wa",
+   "date": "2026-11-17",
+   "time": "12:15",
+   "platforms": [
+    "whatsapp"
+   ],
+   "files": [
+    "assets/announce/ios-soon-square.png"
+   ],
+   "caption": "📱 Campus Plug is coming to iPhone! The iPhone app is launching soon, and we'll post here the moment it's out.\n\nOn Android? It's free on Google Play right now, link in bio.\n\nForward this to the iPhone friend who keeps asking 👀"
+  },
+  {
+   "id": "ios-soon-feed",
+   "date": "2026-11-17",
+   "time": "17:30",
+   "platforms": [
+    "facebook",
+    "instagram",
+    "threads"
+   ],
+   "files": [
+    "assets/announce/ios-soon-portrait.png"
+   ],
+   "caption": "📱 iPhone squad, this one's for you: Campus Plug is coming to iPhone. The iPhone app is launching soon.\n\nSame app: the campus feed, the Thrift Store, Plug Points and your student tools.\n\nOn Android? It's free on Google Play right now, link in bio.\n\nFollow @campusplugsa so you hear the moment it drops, and tag the iPhone friend who keeps asking 👀\n\n#CampusPlug #Mzansi #StudentLife #SAStudents #iPhone"
+  },
+  {
+   "id": "ios-soon-li",
+   "date": "2026-11-17",
+   "time": "17:30",
+   "platforms": [
+    "linkedin"
+   ],
+   "files": [
+    "assets/announce/ios-soon-portrait.png"
+   ],
+   "caption": "Campus Plug is coming to iPhone.\n\nThe student app for South African university, college and TVET students (campus feed, Thrift Store marketplace, Plug Points rewards and student tools) is launching on iOS soon. It is live on Android today.\n\nGet Campus Plug on Google Play: https://campusplug.club\n\n#CampusPlug #SAStudents #EdTech #SouthAfrica"
+  },
+  {
+   "id": "ios-soon-x",
+   "date": "2026-11-17",
+   "time": "17:40",
+   "platforms": [
+    "x"
+   ],
+   "files": [
+    "assets/announce/ios-soon-square.png"
+   ],
+   "caption": "📱 Campus Plug is coming to iPhone. Launching soon!\n\nOn Android? It's free on Google Play now, link in bio.\n\n#CampusPlug #SAStudents"
+  },
+  {
+   "id": "ios-soon-video",
+   "date": "2026-11-17",
+   "time": "19:30",
+   "platforms": [
+    "tiktok",
+    "youtube",
+    "facebook_video"
+   ],
+   "files": [
+    "assets/announce/ios-soon-short.mp4"
+   ],
+   "title": "Campus Plug is coming to iPhone | Campus Plug",
+   "tags": [
+    "Campus Plug",
+    "iPhone",
+    "South Africa",
+    "students"
+   ],
+   "caption": "iPhone squad, Campus Plug is coming to iPhone 📱 Launching soon. On Android? Free on Google Play now. #CampusPlug #Mzansi #StudentLife #SAStudents #iPhone"
+  }
+ ]
+}

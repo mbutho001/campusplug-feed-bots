@@ -391,6 +391,11 @@ def register_poll(day, item, source, ref):
     jsave(STATE / "polls.json", reg)
 
 
+def announcements(day):
+    """One-off posts from announcements.json (committed assets, e.g. assets/announce/) for this day."""
+    return [i for i in jload(ROOT / "announcements.json", {"items": []})["items"] if i.get("date") == day.isoformat()]
+
+
 def post(dry=False, force_ids=()):
     if (STATE / "PAUSE").exists():
         log("post: paused (campaign/state/PAUSE)")
@@ -398,8 +403,10 @@ def post(dry=False, force_ids=()):
     now = datetime.now(SAST)
     day = now.date()
     plan = jload(plan_path(day), None)
-    if not plan:
+    extra = announcements(day)
+    if not plan and not extra:
         return 0
+    plan = plan or {"date": day.isoformat(), "items": [], "rev": PLAN_REV}
     if plan.get("rev", 1) < PLAN_REV and not dry:
         log(f"post: plan rev {plan.get('rev', 1)} < {PLAN_REV}, rebuilding today's plan first")
         make(day)
@@ -408,7 +415,7 @@ def post(dry=False, force_ids=()):
         plan = jload(plan_path(day), plan)
     posted = jload(STATE / "posted.json", {})
     failures = 0
-    for item in plan["items"]:
+    for item in plan["items"] + extra:
         h, m = map(int, item["time"].split(":"))
         at = now.replace(hour=h, minute=m, second=0, microsecond=0)
         end = now.replace(hour=23, minute=59) if item.get("grace") == "day" else at + timedelta(hours=GRACE_HOURS)
