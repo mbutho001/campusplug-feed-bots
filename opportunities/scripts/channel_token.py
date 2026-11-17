@@ -106,8 +106,12 @@ def tiktok():
     webbrowser.open(url)
     back = getpass.getpass("\nPaste the full address you land on (https://campusplug.club/?code=...) (hidden): ").strip()
     q = urllib.parse.parse_qs(urllib.parse.urlparse(back).query)
-    if q.get("state", [""])[0] != state or "code" not in q:
-        sys.exit("That address has no code from this sign-in - run it again")
+    if "code" not in q:
+        sys.exit("That address has no ?code= in it. After you tap Authorize, copy the address of the "
+                 "campusplug.club page you land on (it starts https://campusplug.club/?code=) - run it again")
+    if q.get("state", [""])[0] != state:
+        sys.exit("That address is from an EARLIER sign-in (its state doesn't match this run). Close old "
+                 "campusplug.club tabs and copy the address from the tab this run just opened - run it again")
     tok = post_form("https://open.tiktokapis.com/v2/oauth/token/", {
         "client_key": key, "client_secret": csecret, "code": q["code"][0],
         "grant_type": "authorization_code", "redirect_uri": TIKTOK_REDIRECT})
