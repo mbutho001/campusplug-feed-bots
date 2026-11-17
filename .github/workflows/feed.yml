@@ -164,11 +164,16 @@ jobs:
         # Start the following run at the next 10-minute mark. A workflow_dispatch sent with the
         # GITHUB_TOKEN does start a new run (the documented exception), and the concurrency group
         # keeps at most one queued, so extra chains from the schedule collapse into one.
-        if: always() && github.event.inputs.only == ''
+        # A newer queued run REPLACES a waiting one, so never dispatch over a run that is already
+        # waiting (e.g. a manual `only` run): it runs next and chains the beat itself.
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           sleep $(( 600 - $(date +%s) % 600 ))
+          waiting=$(gh run list -R "${{ github.repository }}" -w feed.yml -L 10 --json status \
+            -q '[.[] | select(.status=="pending" or .status=="queued" or .status=="waiting")] | length' || echo 0)
+          if [ "${waiting:-0}" -gt 0 ]; then echo "a run is already waiting - it will chain the next tick"; exit 0; fi
           gh workflow run feed.yml -R "${{ github.repository }}"
 
       - name: Keepalive
