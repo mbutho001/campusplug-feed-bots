@@ -56,7 +56,7 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           REPORT_RECIPIENTS: ${{ secrets.REPORT_RECIPIENTS }}
         run: |
-          pip install --quiet requests jsonschema Pillow edge-tts==7.3.1
+          pip install --quiet requests jsonschema Pillow openpyxl edge-tts==7.3.1
           # WhatsApp Channel poster (opportunities/scripts/wa): Baileys linked device.
           (cd opportunities/scripts/wa && npm ci --no-audit --no-fund --silent)
           rsync -a --exclude .git .state/ ./
@@ -86,6 +86,8 @@ jobs:
           # Mail recipients stay out of this public repo.
           DIGEST_RECIPIENTS: ${{ secrets.DIGEST_RECIPIENTS }}
           STATS_RECIPIENTS: ${{ secrets.STATS_RECIPIENTS }}
+          # Plug Store sync (store-sync/run.py): narrow token for the store_sync_* RPCs only.
+          STORE_SYNC_TOKEN: ${{ secrets.STORE_SYNC_TOKEN }}
           # Meta Graph API posting (opportunities/scripts/meta_post.py). Unset = Meta posting off.
           META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
           THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
@@ -118,7 +120,7 @@ jobs:
         if: always()
         run: |
           cd .state
-          rm -rf trend-bots opportunities social-radar user-stats campaign
+          rm -rf trend-bots opportunities social-radar user-stats campaign store-sync
           mkdir -p trend-bots opportunities/out opportunities/state social-radar/state user-stats campaign/out
           cp ../tick-state.json . 2>/dev/null || true
           rsync -a --exclude '*.lock' --exclude 'crontab.backup*' ../trend-bots/state ../trend-bots/logs trend-bots/ 2>/dev/null || true
@@ -138,6 +140,8 @@ jobs:
           cp ../social-radar/state/seen.sqlite3 social-radar/state/ 2>/dev/null || true
           rsync -a ../social-radar/logs social-radar/ 2>/dev/null || true
           rsync -a ../user-stats/logs user-stats/ 2>/dev/null || true
+          # Plug Store sync: price lists, Core costs, deal history (private, state repo only).
+          mkdir -p store-sync && rsync -a --exclude 'PAUSE.example' ../store-sync/state ../store-sync/logs store-sync/ 2>/dev/null || true
           rsync -a ../opportunities/logs opportunities/ 2>/dev/null || true
           # Only the listing JSON the opportunity bots post from, last 30 days (by the date in the name;
           # file mtimes are reset by every checkout).
