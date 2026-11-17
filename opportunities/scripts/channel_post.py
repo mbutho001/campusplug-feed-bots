@@ -27,6 +27,7 @@ Secrets (GitHub secrets, never in this public repo):
     python3 channel_post.py --only youtube --force   # post that slot now (testing)
 """
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -119,10 +120,16 @@ TT = "https://open.tiktokapis.com/v2"
 
 def tiktok_access():
     key, secret = env("TIKTOK_CLIENT_KEY"), env("TIKTOK_CLIENT_SECRET")
-    refresh = env("TIKTOK_REFRESH_TOKEN")
+    seed = env("TIKTOK_REFRESH_TOKEN")
+    seed_id = hashlib.sha256((seed or "").encode()).hexdigest()[:16]
+    refresh = seed
     if TIKTOK_STATE.exists():
         try:
-            refresh = json.loads(TIKTOK_STATE.read_text()).get("refresh_token") or refresh
+            st = json.loads(TIKTOK_STATE.read_text())
+            # Use the rotated token only while it descends from the current secret: re-running
+            # channel_token.py tiktok sets a new secret, which must win over a dead rotated token.
+            if st.get("seed") == seed_id and st.get("refresh_token"):
+                refresh = st["refresh_token"]
         except ValueError:
             pass
     if not (key and secret and refresh):
@@ -133,7 +140,7 @@ def tiktok_access():
         raise PostError(f"tiktok token refresh: {r.get('error_description') or r}")
     # TikTok rotates the refresh token; keep the newest one.
     TIKTOK_STATE.parent.mkdir(parents=True, exist_ok=True)
-    TIKTOK_STATE.write_text(json.dumps({"refresh_token": r.get("refresh_token", refresh),
+    TIKTOK_STATE.write_text(json.dumps({"refresh_token": r.get("refresh_token", refresh), "seed": seed_id,
                                         "refreshed": date.today().isoformat()}))
     os.chmod(TIKTOK_STATE, 0o600)
     return r["access_token"]
