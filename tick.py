@@ -58,7 +58,7 @@ DAILY = {
     # Traction campaign (campaign/run.py): today's plan + posters + Short, the trend-desk repost,
     # poll results, and the Monday Plug Pulse report. Posting is the campaign-post repeat job.
     "campaign-make":    ("06:45", "15:00", None, CAMP, [[PY, "run.py", "make"]], 30),
-    "campaign-pulse":   ("14:15", "19:00", None, CAMP, [[PY, "run.py", "pulse"]], 10),
+    "campaign-pulse":   ("17:15", "21:00", None, CAMP, [[PY, "run.py", "pulse"]], 10),
     "campaign-collect": ("21:45", "23:59", None, CAMP, [[PY, "run.py", "collect"]], 15),
     "campaign-report":  ("08:30", "23:59", 0, CAMP, [[PY, "run.py", "collect"], [PY, "run.py", "report"]], 20),
     # Plug Store <- Core Group (Apple): price list, products, availability, 15 % Plug Deals by season, front card, feed promos.

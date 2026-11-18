@@ -38,7 +38,7 @@
   },
   "pulse": {
     "_note": "Reposts the best audited trend-desk post of the day to socials. Category plan by weekday.",
-    "time": "14:30",
+    "time": "17:30",
     "platforms": ["threads", "facebook", "whatsapp"],
     "x": true,
     "min_confidence": 0.85,

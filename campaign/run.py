@@ -424,7 +424,7 @@ def post(dry=False, force_ids=()):
         key = f"{day.isoformat()}#{item['id']}"
         done = posted.setdefault(key, {})
         for platform in item["platforms"]:
-            if platform in done or f"{platform}!" in done:
+            if platform in done or f"{platform}!" in done:   # "?" (skipped) is retried, e.g. once secrets exist
                 continue
             if dry:
                 log(f"[dry-run] {item['time']} {item['id']} -> {platform}: {item.get('caption', '')[:120]!r}")
@@ -432,7 +432,9 @@ def post(dry=False, force_ids=()):
             try:
                 pid, note = post_item(item, platform, day, done)
                 if pid is None:
-                    log(f"{key} {platform}: skipped ({note})")
+                    if done.get(f"{platform}?") != note:   # log a skip once a day, not every tick
+                        log(f"{key} {platform}: skipped ({note})")
+                        done[f"{platform}?"] = note
                     continue
                 done[platform] = pid
                 log(f"{key} {platform}: posted {pid} ({note})")
@@ -558,7 +560,7 @@ def report(dry=False):
     for k, v in posted.items():
         if (today - date.fromisoformat(k.split("#")[0])).days in range(1, 8):
             for p in v:
-                if p in ("page", "ig", "urls", "story_upload"):
+                if p in ("page", "ig", "urls", "story_upload") or p.endswith("?"):
                     continue
                 ok = not p.endswith("!")
                 activity.setdefault(p.rstrip("!"), [0, 0])[0 if ok else 1] += 1

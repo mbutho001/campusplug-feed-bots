@@ -10,7 +10,7 @@ Runs on the feed-bots tick (GitHub Actions). Nothing here needs the home PC.
 | 12:00 Mon/Thu/Sat | post | FB + IG story |
 | 12:00 Mon | post | Last week's Plug Pulse results poster (only if a poll got 5+ votes) |
 | 13:30 Thu | post | Brand-battle poll poster on FB + IG |
-| 14:15 → 14:30 | `campaign-pulse` | Best audited trend-desk post of the day → Threads + FB (+ X) |
+| 17:15 → 17:30 | `campaign-pulse` | Best audited trend-desk post of the day → Threads + FB (+ X) |
 | 16:00 Tue/Fri | post | Short → TikTok (inbox draft until audit), YouTube (once secrets exist), FB video |
 | 18:00 Mon/Wed/Fri/Sat | post | Promo carousel → FB + IG + Threads; X Mon/Fri 18:10; LinkedIn Wed |
 | 21:45 | `campaign-collect` | Poll results from app, Threads, X → `state/poll-results.json` |
