@@ -91,13 +91,15 @@ MANUAL = {
     "store-rebuild": (STORE, [PY, "run.py", "sync", "--force-build"], 40),
     # Catch-up: post today's poll items whatever the time (e.g. after a missed 10:00 slot).
     "campaign-polls-now": (CAMP, [PY, "run.py", "post", "--force", "poll-app", "poll-threads"], 10),
+    # Upload the last 7 days' Shorts that never reached YouTube (rebuilt as they were that day).
+    "yt-backfill": (OPP, [PY, "scripts/yt_backfill.py"], 90),
     "tiktok-now": (OPP, [PY, "scripts/channel_post.py", "--only", "tiktok", "--force"], 20),  # re-render today's Short after a failure
 }
 
 # Each job logs where its cron line used to (logs/<job>.log), so the logs read the same.
 LOG_NAME = {"campaign-make": "campaign", "campaign-pulse": "campaign", "campaign-collect": "campaign",
             "campaign-report": "campaign", "campaign-post": "campaign", "store-sync": "store-sync", "store-check": "store-sync", "store-dry": "store-sync", "store-rebuild": "store-sync", "campaign-dry": "campaign", "campaign-polls-now": "campaign",
-            "opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "meta-post": "meta_post", "channel-post": "channel_post", "stories-now": "meta_post", "tiktok-now": "channel_post", "publish": "publish", "scout": "scout",
+            "opp-collect": "run", "opp-digest": "digest", "user-stats": "run", "social-radar": "cron", "opp-publish": "app_publish", "meta-post": "meta_post", "channel-post": "channel_post", "stories-now": "meta_post", "tiktok-now": "channel_post", "yt-backfill": "channel_post", "publish": "publish", "scout": "scout",
             "report-daily": "report", "report-weekly": "report"}
 
 
